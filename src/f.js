@@ -58,7 +58,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  const P={ff:Date.now()+5000,pos:new T.Vector3(0,1,0),vel:new T.Vector3(),yaw:0,ground:false,hp:100,dead:false,spawn:new T.Vector3(0,1,0),stage:0,coins:0,emote:null,emoteT:0};
  // npcs
  const npcs=[].map((u,k)=>{const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10].id);const m=makeChar(u.colors,items);scene.add(m);const a=k*.8;return{u,m,pos:new T.Vector3(Math.cos(a)*20,1,Math.sin(a)*20),vel:new T.Vector3(),yaw:0,tgt:null,hp:100,dead:false,stage:ri(0,5,r),coins:ri(0,20,r),t:0}});
- const keys={},tools=[...S.inv.map(itemById).filter(i=>i&&i.top=="Gear").filter((v,i,a)=>a.indexOf(v)==i).map(i=>({n:i.name,c:i.color,k:i.name.includes("Coil")?(i.name.includes("Speed")?"speed":"grav"):i.sub=="Ranged"?"paint":i.sub=="Explosive"?"rocket":"sword"}))];
+ const keys={},tools=[...S.inv.map(itemById).filter(i=>i&&i.top=="Gear").filter((v,i,a)=>a.indexOf(v)==i).map(i=>({n:i.name,c:i.color,item:i,k:i.acc&&i.acc.attach=="carpet"?"carpet":i.name.includes("Coil")?(i.name.includes("Speed")?"speed":"grav"):i.sub=="Ranged"?"paint":i.sub=="Explosive"?"rocket":"sword"}))];
  const slots=tools.slice(0,10).map((t,i)=>i);let eq=-1,toolMesh=null;const proj=[],debris=[],bubbles=[];
  let yaw=0,pitch=.35,dist=18,distT=18,vis=null,camP=null,lastAct=now(),shiftLock=false,rdrag=false,lastX=0,lastY=0,chatOpen=true,chatT=now(),plOpen=innerWidth>700,unread=0,swing=0,recording=false,clickTarget=null,frames=0,fpsT=performance.now(),fps=60;
  GM={gid:g.id,ren,raf:0,iv:0};
@@ -89,8 +89,8 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  renderPL();
  function renderHot(){$("#hotbar").innerHTML=slots.map((ti,i)=>{const t=tools[ti];return `<div class="slot ${eq==ti?"on":""}" data-i="${i}" draggable="true"><span class="k">${(i+1)%10}</span><div style="width:22px;height:22px;background:${t.c};transform:rotate(45deg);margin-bottom:6px"></div>${esc(t.n.slice(0,10))}</div>`}).join("");
   $$("#hotbar .slot").forEach(s=>{s.onclick=()=>equip(slots[+s.dataset.i]);s.ondragover=e=>e.preventDefault();s.ondrop=e=>{e.preventDefault();const ti=+e.dataTransfer.getData("t");const i=+s.dataset.i;const j=slots.indexOf(ti);if(j>=0)slots[j]=slots[i];slots[i]=ti;renderHot()};s.ondragstart=e=>e.dataTransfer.setData("t",slots[+s.dataset.i])})}
- function equip(ti){if(toolMesh){me.userData.ra.remove(toolMesh);toolMesh=null}if(eq==ti||ti==null){eq=-1;renderHot();return}eq=ti;const t=tools[ti];
-  toolMesh=new T.Mesh(t.k=="sword"?new T.BoxGeometry(.3,4,.15):t.k=="grav"||t.k=="speed"?new T.TorusGeometry(.5,.12,8,16):new T.BoxGeometry(.5,.6,2.5),new T.MeshLambertMaterial({color:t.c}));toolMesh.position.set(0,me.userData.skinned?0:-2,t.k=="sword"?-1.5:-.8);if(t.k=="sword")toolMesh.rotation.x=Math.PI/2;me.userData.ra.add(toolMesh);renderHot()}
+ function equip(ti){if(toolMesh){(toolMesh.parent||me).remove(toolMesh);toolMesh=null}if(eq==ti||ti==null){eq=-1;renderHot();return}eq=ti;const t=tools[ti];
+  if(t.k=="carpet"){toolMesh=accMesh(t.item.acc)||new T.Mesh(new T.BoxGeometry(4,.2,7),new T.MeshLambertMaterial({color:0xaa44ff}));toolMesh.position.set(0,.05,0);me.add(toolMesh);toolMesh.userData.carpet=1;renderHot();return}toolMesh=new T.Mesh(t.k=="sword"?new T.BoxGeometry(.3,4,.15):t.k=="grav"||t.k=="speed"?new T.TorusGeometry(.5,.12,8,16):new T.BoxGeometry(.5,.6,2.5),new T.MeshLambertMaterial({color:t.c}));toolMesh.position.set(0,me.userData.skinned?0:-2,t.k=="sword"?-1.5:-.8);if(t.k=="sword")toolMesh.rotation.x=Math.PI/2;me.userData.ra.add(toolMesh);renderHot()}
  renderHot();
  function toggleBP(){const o=$("#bpfull");if(o.classList.contains("on")){o.classList.remove("on");$("#bbp").classList.remove("on");root.classList.remove("bpopen");applyAssets();return}o.classList.add("on");$("#bbp").classList.add("on");root.classList.add("bpopen");applyAssets();
   o.innerHTML=`<div class="gpanel"><div class="bparr2" id="bparr2">▼</div><div class="row" style="justify-content:flex-end"><input id="bps" placeholder="   Search"><button id="bpx">Close</button></div><div class="row wrapflex" id="bpg" style="gap:6px"></div></div>`;
@@ -184,14 +184,14 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
   if(!$("#esc").classList.contains("on")&&loaded&&!P.dead){
    // movement
    let ix=(keys["d"]||keys["arrowright"]?1:0)-(keys["a"]||keys["arrowleft"]?1:0)+stickV.x,iz=(keys["s"]||keys["arrowdown"]?1:0)-(keys["w"]||keys["arrowup"]?1:0)+stickV.y;
-   const speed=16*(eq>=0&&tools[eq].k=="speed"?1.6:1);const cy=Math.cos(yaw),sy=Math.sin(yaw);let mx=ix*cy+iz*sy,mz=-ix*sy+iz*cy;
+   const speed=16*(eq>=0&&tools[eq].k=="speed"?1.6:eq>=0&&tools[eq].k=="carpet"?1.8:1);const cy=Math.cos(yaw),sy=Math.sin(yaw);let mx=ix*cy+iz*sy,mz=-ix*sy+iz*cy;
    if(clickTarget&&!ix&&!iz){const d=clickTarget.clone().sub(P.pos);d.y=0;if(d.length()<1)clickTarget=null;else{d.normalize();mx=d.x;mz=d.z}}else if(ix||iz)clickTarget=null;
    const ml=Math.hypot(mx,mz);if(ml>0){mx/=Math.max(1,ml);mz/=Math.max(1,ml)}
    const acc=1-Math.exp(-dt*(P.ground?(ml>0?9:11):3));P.vel.x+=(mx*speed-P.vel.x)*acc;P.vel.z+=(mz*speed-P.vel.z)*acc;
-   if(keys[" "]&&P.ground){P.vel.y=eq>=0&&tools[eq].k=="grav"?70:50;sfx("jump");PS.emit("dust",P.pos,6)}
+   if(keys[" "]&&P.ground&&!(eq>=0&&tools[eq].k=="carpet")){P.vel.y=eq>=0&&tools[eq].k=="grav"?70:50;sfx("jump");PS.emit("dust",P.pos,6)}
    const tyaw=shiftLock||dist<1?yaw:ml>0?Math.atan2(-mx,-mz):P.yaw;let dy=tyaw-P.yaw;while(dy>Math.PI)dy-=6.2832;while(dy<-Math.PI)dy+=6.2832;P.yaw+=dy*(1-Math.exp(-dt*(shiftLock||dist<1?30:14)));
    if(ml>0&&P.emote)P.emote=null;
-   const wasG=P.ground,fallV=P.vel.y;const gnd=physics(P,dt,eq>=0&&tools[eq].k=="grav"?60:196);if(!wasG&&P.ground&&fallV<-30){sfx("land");PS.emit("dust",P.pos,Math.min(24,Math.round(-fallV/4)))}if(P.ground&&Math.hypot(P.vel.x,P.vel.z)>12&&Math.random()<.12)PS.emit("dust",P.pos,1);footsteps(P.ground&&Math.hypot(P.vel.x,P.vel.z)>2&&!P.dead,S.settings.volume/100*.6);
+   const wasG=P.ground,fallV=P.vel.y;const flying=eq>=0&&tools[eq].k=="carpet";if(flying){const up=(keys[" "]?1:0)-(keys["c"]||keys["control"]?1:0);P.vel.y+=(up*22-P.vel.y)*Math.min(1,dt*6)}const gnd=physics(P,dt,flying?0:eq>=0&&tools[eq].k=="grav"?60:196);if(!wasG&&P.ground&&fallV<-30){sfx("land");PS.emit("dust",P.pos,Math.min(24,Math.round(-fallV/4)))}if(P.ground&&Math.hypot(P.vel.x,P.vel.z)>12&&Math.random()<.12)PS.emit("dust",P.pos,1);footsteps(P.ground&&Math.hypot(P.vel.x,P.vel.z)>2&&!P.dead,S.settings.volume/100*.6);
    if(gnd&&gnd.kind=="kill")damage(100);
    if(gnd&&gnd.kind=="check"&&gnd.stage>P.stage){P.stage=gnd.stage;P.spawn.set((gnd.min.x+gnd.max.x)/2,gnd.max.y,(gnd.min.z+gnd.max.z)/2);sfx("coin");chat("","Checkpoint! Stage "+P.stage,true);
     if(gnd.stage==10)awardBadge("Obby Master")}

@@ -26,8 +26,8 @@ function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s
   bones:{head:find("Head_01"),headEnd:find("Head_end"),ra:find("Right Arm_end")||find("Right Arm"),torso:find("Torso"),la:find("Left Arm_end"),ll:find("Left Leg_end"),rl:find("Right Leg_end")},att:[]};
  m.userData.ra=new T.Group();m.add(m.userData.ra); // tool holder that follows the right hand
  const hatHolder=new T.Group();m.add(hatHolder);m.userData.hat=hatHolder;
- it.filter(x=>x.top=="Accessories").forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
- noobPlay(m,"Idle");return m}
+ it.filter(x=>x.top=="Accessories"&&!x.acc).forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
+ addAccessories(m,items,window._accOpts||{});noobPlay(m,"Idle");return m}
 function noobPlay(m,name){const u=m.userData;if(u.cur==name||!u.acts[name])return;const a=u.acts[name];a.reset();a.setLoop(name=="Jump"?THREE.LoopOnce:THREE.LoopRepeat);a.clampWhenFinished=true;a.play();if(u.cur&&u.acts[u.cur])a.crossFadeFrom(u.acts[u.cur],.25,true);u.cur=name}
 const _v=()=>new THREE.Vector3();
 function noobAnim(m,moving,ground,emote,sw,tool){const u=m.userData;const t=performance.now();const dt=Math.min(.1,(t-u.last)/1000);u.last=t;
@@ -52,10 +52,10 @@ function noobBreak(m,scene,debris){const T=THREE,u=m.userData,sk=u.skin;m.update
 /* offscreen renderer: every avatar picture on the site is a render of the model */
 const AVPH="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#dfe3e6"/></svg>');
 const avCache={};let AVR=null;
-function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stringify([o.model||S.bodyModel,(modelById(o.model||S.bodyModel)||{})._ready?1:0,o.colors,o.items,!!o.head,o.bg||""]);if(avCache[key])return avCache[key];
+function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stringify([!!o.thumb,Object.values(accTex).filter(t=>t.ok).length,o.model||S.bodyModel,(modelById(o.model||S.bodyModel)||{})._ready?1:0,o.colors,o.items,!!o.head,o.bg||""]);if(avCache[key])return avCache[key];
  try{const T=THREE;if(!AVR){const r=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(300,300,false);const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const d=new T.DirectionalLight(0xffffff,.55);d.position.set(-4,6,-8);sc.add(d);AVR={r,sc,cam:new T.PerspectiveCamera(30,1,.1,100)}}
-  const m=makeBody(o.model||S.bodyModel,o.colors,o.items||[]);m.rotation.y=.4;if(m.userData.skinned){m.userData.mixer.update(.6);m.updateMatrixWorld(true);noobAnim(m,false,true,null,0,false)}AVR.sc.add(m);
-  const c=AVR.cam;if(o.head){c.position.set(-1.1,4.75,-4.6);c.lookAt(0,4.5,0)}else{c.position.set(-3,2.9,-12.5);c.lookAt(0,2.55,0)}
+  window._accOpts={thumb:!!o.thumb};const m=makeBody(o.model||S.bodyModel,o.colors,o.items||[]);window._accOpts={};m.rotation.y=.4;if(m.userData.skinned){m.userData.mixer.update(.6);m.updateMatrixWorld(true);noobAnim(m,false,true,null,0,false)}AVR.sc.add(m);
+  const c=AVR.cam;if(o.head){c.position.set(-1.5,5.1,-6.6);c.lookAt(0,4.75,0)}else{c.position.set(-3,2.9,-12.5);c.lookAt(0,2.55,0)}
   AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
 function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
 
@@ -86,7 +86,18 @@ function makeObjChar(m,colors,items){const T=THREE,parts=objParts(m),it=eqItems(
  const colOf={head:colors.head,torso:colors.torso,la:colors.la,ra:colors.ra,ll:colors.ll,rl:colors.rl};
  for(const k in parts){const piv=new T.Group();piv.position.set(...parts[k].p);const mat=new T.MeshLambertMaterial({map:tex});mat.color.set(colOf[k]||"#ffffff").multiplyScalar(1.25);const mesh=new T.Mesh(parts[k].g,mat);mesh.castShadow=true;piv.add(mesh);grp.add(piv);ud[k]=piv}
  ['la','ra','ll','rl','head','torso'].forEach(k=>{if(!ud[k]){ud[k]=new T.Group();grp.add(ud[k])}});
- it.filter(x=>x.top=="Accessories").forEach(h=>{const b=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),new T.MeshLambertMaterial({color:h.color}));b.position.y=.9;ud.head.add(b)});
- outer.userData=ud;return outer}
+ it.filter(x=>x.top=="Accessories"&&!x.acc).forEach(h=>{const b=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),new T.MeshLambertMaterial({color:h.color}));b.position.y=.9;ud.head.add(b)});
+ outer.userData=ud;addAccessories(outer,items,window._accOpts||{});return outer}
 function makeBody(id,colors,items){const m=modelById(id);if(m&&m.id!="noob"&&m._ready)return makeObjChar(m,colors,items);return makeNoob(colors,items)}
 setTimeout(loadObjModels,0);
+
+/* ================= OBJ ACCESSORIES (hats, hair, back, carpet gear) ================= */
+const accGeo={},accTex={};
+function accReady(a){if(!accTex[a.tex]){const im=new Image();accTex[a.tex]={im,ok:false,t:null};im.onload=()=>{accTex[a.tex].ok=true;const t=new THREE.CanvasTexture(im);accTex[a.tex].t=t;onFaceAsset()};im.src=encodeURI(a.tex)}return accTex[a.tex].ok}
+function accGeometry(key){if(accGeo[key])return accGeo[key];const src=(window.BLOX_ACCESSORY_OBJS||{})[key];if(!src)return null;const V=[],VT=[],pos=[],uv=[];
+ for(const l of src.split("\n")){const p=l.trim().split(/\s+/);if(p[0]=="v")V.push(p.slice(1,4).map(Number));else if(p[0]=="vt")VT.push(p.slice(1,3).map(Number));else if(p[0]=="f"){const ix=p.slice(1).map(t=>t.split("/").map(n=>parseInt(n)-1));for(let k=1;k<ix.length-1;k++)for(const q of[ix[0],ix[k],ix[k+1]]){const v=V[q[0]];pos.push(v[0],v[1],v[2]);const t=VT[q[1]]||[0,0];uv.push(t[0],t[1])}}}
+ const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return accGeo[key]=g}
+function accMesh(a){accReady(a);const g=accGeometry(a.obj);if(!g)return null;const t=accTex[a.tex];const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:t&&t.t||null,color:t&&t.t?0xffffff:0x999999,side:THREE.DoubleSide}));m.castShadow=true;return m}
+const HEAD_C=4.45,TORSO_C=3.0;
+function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=it.acc;if(!a)return;if(a.attach=="carpet"&&!opts.thumb)return;const m=accMesh(a);if(!m)return;const o=a.offset||[0,0,0];
+ if(a.attach=="head")m.position.set(o[0],HEAD_C+o[1],o[2]);else if(a.attach=="back")m.position.set(o[0],TORSO_C+o[1],o[2]);else m.position.set(0,.05,0);m.userData.acc=1;root.add(m)})}
