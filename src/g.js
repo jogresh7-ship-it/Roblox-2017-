@@ -167,13 +167,22 @@ let AV3=null;
 function stopAv3d(){if(AV3){cancelAnimationFrame(AV3.raf);AV3.ren.dispose();AV3=null}}
 function startAv3d(el){stopAv3d();if(!el||!window.THREE)return;const T=THREE,ren=new T.WebGLRenderer({antialias:true,alpha:true});ren.setPixelRatio(Math.min(2,devicePixelRatio));ren.setSize(300,340);el.appendChild(ren.domElement);
  const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const dl=new T.DirectionalLight(0xffffff,.55);dl.position.set(-4,6,-8);sc.add(dl);const cam=new T.PerspectiveCamera(30,300/340,.1,100);
- const ch=makeBody(S.bodyModel,S.colors,S.equipped);sc.add(ch);const pt=S.previewTool&&itemById(S.previewTool);if(pt&&pt.acc){attachTool(ch,pt);if(!ch.userData.skinned)ch.userData.ra.rotation.x=Math.PI/2}let yaw=window._avYaw??.5,drag=null,auto=window._avAuto??true;
+ const ch=makeBody(S.bodyModel,S.colors,S.equipped);sc.add(ch);const pt=null;if(pt&&pt.acc){attachTool(ch,pt);if(!ch.userData.skinned)ch.userData.ra.rotation.x=Math.PI/2}let yaw=window._avYaw??.5,drag=null,auto=window._avAuto??true;
  auto=true;
  let last=performance.now();AV3={ren,raf:0};(function loop(){if(!AV3)return;AV3.raf=requestAnimationFrame(loop);const t=performance.now(),dt=(t-last)/1000;last=t;if(auto)yaw+=dt*.4;ch.rotation.y=yaw;window._avYaw=yaw;window._avAuto=auto;
   if(ch.userData.skinned)noobAnim(ch,false,true,null,0,!!pt);cam.position.set(0,3.1,-13);cam.lookAt(0,2.7,0);ren.render(sc,cam)})()}
 
 /* ===== held tools: shared attach + tuner offsets (position in studs, rotation in degrees) ===== */
-function toolAdj(it){const a=it.acc||{};return (S.toolAdj&&S.toolAdj[it.id])||{p:a.toolPos||[0,0,0],r:a.toolRot||[0,0,0]}}
+function toolAdj(it){const a=it.acc||{};return {p:a.toolPos||[0,0,0],r:a.toolRot||[0,0,0]}}
 function attachTool(ch,it){const m=accMesh(it.acc);if(!m)return null;orientTool(m,it.acc,ch.userData.skinned);const ad=toolAdj(it),D=Math.PI/180;
  const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(ad.r[0]*D,ad.r[1]*D,ad.r[2]*D,"XYZ"));m.quaternion.premultiply(q);m.position.applyQuaternion(q);m.position.add(new THREE.Vector3(...ad.p));
  m.userData.tool=1;ch.userData.ra.add(m);return m}
+
+/* ===== tool icons: render just the 3D tool model on a clear background ===== */
+const toolIconCache={};
+function toolIcon(it){const a=it.acc;const k=it.id+"|"+(accTex[a.tex]&&accTex[a.tex].ok?1:0);if(toolIconCache[k])return toolIconCache[k];if(!window.THREE)return AVPH;
+ try{const T=THREE;accReady(a);if(!AVR)renderAvatar({colors:S.colors,items:[]});const m=accMesh(a);if(!m)return AVPH;const g=m.geometry;g.computeBoundingBox();const bb=g.boundingBox,c=new T.Vector3(),sz=new T.Vector3();bb.getCenter(c);bb.getSize(sz);
+  const piv=new T.Group();m.position.sub(c);piv.add(m);piv.rotation.set(.35,a.attach=="carpet"?.6:-.7,a.attach=="hand"?.5:0);AVR.sc.add(piv);
+  const r=Math.max(sz.x,sz.y,sz.z)*.6,cam=new T.PerspectiveCamera(30,1,.1,200);cam.position.set(0,0,r/Math.tan(15*Math.PI/180)+r);cam.lookAt(0,0,0);
+  AVR.r.setClearColor(0,0);AVR.r.render(AVR.sc,cam);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(piv);m.material.dispose();
+  return toolIconCache[k]=url}catch(e){console.warn(e);return AVPH}}
