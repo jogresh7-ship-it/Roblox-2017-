@@ -124,7 +124,7 @@ footer a{margin:0 10px;font-size:16px;color:var(--tx2)}
 #game{position:fixed;inset:0;z-index:1000;background:#000;display:none;font-family:"Source Sans Pro",Arial;color:#fff;user-select:none}
 #game.on{display:block}
 #game canvas{display:block}
-.gtop{position:absolute;top:0;left:0;right:0;height:36px;background:rgba(31,31,31,.75);display:flex;align-items:center;gap:2px;padding:0 4px;z-index:3}.tbi{width:44px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;position:relative;transition:color .15s}.tbi svg{width:28px;height:28px}.tbi:hover{background:rgba(255,255,255,.08)}.tbi.on{color:#00A2FF}#cdot{display:none;position:absolute;top:5px;right:8px;width:8px;height:8px;border-radius:50%;background:#E2231A}.tbname{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.05;padding:0 10px;height:36px;cursor:pointer;font-size:14px}.tbname:hover{background:rgba(255,255,255,.08)}.tbname span{font-size:11px;opacity:.75}
+.gtop{position:absolute;top:0;left:0;right:0;height:36px;background:rgba(25,25,25,.6);display:flex;align-items:center;gap:2px;padding:0 4px;z-index:3}.tbi{width:38px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;position:relative;transition:color .15s}.tbi svg{width:24px;height:24px}.tbi:hover{background:rgba(255,255,255,.08)}.tbi.on{color:#00A2FF}#cdot{display:none;position:absolute;top:5px;right:8px;width:8px;height:8px;border-radius:50%;background:#E2231A}.tbname{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;line-height:1.05;padding:0 10px;height:36px;cursor:pointer;font-size:14px}.tbname:hover{background:rgba(255,255,255,.08)}.tbname span{font-size:11px;opacity:.75}
 .gbtn{width:32px;height:28px;border-radius:4px;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
 .gbtn:hover{background:rgba(255,255,255,.2)}
 #gchat{position:absolute;top:42px;left:8px;width:380px;background:rgba(0,0,0,.3);border-radius:3px;transition:opacity .5s;font-size:15px;text-shadow:0 1px 2px #000}
@@ -163,6 +163,24 @@ footer a{margin:0 10px;font-size:16px;color:var(--tx2)}
 .ribbon button:hover,.ribbon button.on{border-color:#9cf;background:#e6f3ff}
 .spane{background:#fff;border:1px solid #ccc;overflow:auto}
 .etree div{padding:2px 6px;cursor:pointer}.etree div.sel{background:#cde8ff}
+#esc{background:rgba(0,0,0,.45);align-items:flex-start}
+.escwrap{margin-top:24vh;width:min(640px,92vw);color:#fff;font-size:13px}
+.esctabs{display:flex;border-bottom:1px solid rgba(255,255,255,.25)}
+.esctabs div{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 0 8px;cursor:pointer;color:rgba(255,255,255,.75);font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}
+.esctabs div svg{width:20px;height:20px}.esctabs div:hover{color:#fff}
+.esctabs div.on{color:#fff;border-bottom-color:#00A2FF}
+.escbody{max-height:46vh;overflow:auto;padding-top:6px}
+.escbody .prow{display:flex;justify-content:space-between;align-items:center;background:rgba(160,160,160,.55);padding:4px 8px;margin-bottom:3px;min-height:30px}
+.escbody .prow button{background:rgba(0,0,0,.35);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:12px;padding:2px 8px;margin-left:4px}
+.escbody .srow{border-bottom:1px solid rgba(255,255,255,.15)}
+.escbody button,.escbody select,.escbody input,.escbody textarea{background:rgba(0,0,0,.4);color:#fff;border-color:rgba(255,255,255,.4)}
+.escbtns{position:absolute;left:0;right:0;bottom:12vh;display:flex;justify-content:center;gap:10px}
+.ebtn{display:flex;align-items:center;gap:10px;background:rgba(110,110,120,.75);color:#fff;font-size:13px;font-weight:600;padding:6px 14px 6px 6px;border-radius:3px;cursor:pointer;min-width:150px}
+.ebtn:hover{background:rgba(140,140,150,.85)}
+.ebtn i{font-style:normal;border:1.5px solid #fff;border-radius:3px;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;padding:0 3px}
+.tbname{flex-direction:column;align-items:flex-end;justify-content:center;gap:3px}.tbname .nm{font-size:12px;font-weight:600}
+.tbname #hp{width:110px;height:5px;margin:0;border:0;border-radius:0;background:rgba(0,0,0,.5)}
+#game.menuopen #gchat,#game.menuopen #plist{display:none!important}
 </style>
 </head>
 <body>
