@@ -24,7 +24,7 @@ function renderHeader(){const unread=S.notifs.filter(n=>!n.read).length;
  const dd=(id,html)=>{$("#"+id).onclick=e=>{e.stopPropagation();$$(".dd").forEach(d=>d.remove());if(ddOpen==id){ddOpen=null;return}ddOpen=id;const d=document.createElement("div");d.className="dd";d.style.right="0";d.innerHTML=html;$("#"+id).appendChild(d)}};
 /*bux removed*/ 0&&dd("hbux",`<div style="cursor:default"><b>${comma(S.bux)}</b> Bux</div><div onclick="go('#/upgrades/robux')">Buy Bux</div><div onclick="go('#/transactions')">My Transactions</div>`);
  dd("hgear",`<div onclick="go('#/settings')">Settings</div><div onclick="go('#/help')">Help</div><div onclick="showLogin()">Switch Account</div>`);
- $("#hbell").onclick=e=>{e.stopPropagation();$("#notif").classList.toggle("open");renderNotif()};}
+ applyAssets();$("#hbell").onclick=e=>{e.stopPropagation();$("#notif").classList.toggle("open");renderNotif()};}
 function doSearch(k,v){$$(".dd").forEach(d=>d.remove());const q=encodeURIComponent(v);
  if(k=="Games")go("#/games?q="+q);else if(k=="Catalog")go("#/catalog?q="+q);else if(k=="Players")go("#/search/users?q="+q);else if(k=="Groups")go("#/groups?q="+q);else go("#/develop?tab=Library&q="+q)}
 function toggleSide(){const w=innerWidth<=1300;if(w)document.body.classList.toggle("sideopen");else document.body.classList.toggle("sideclosed")}
