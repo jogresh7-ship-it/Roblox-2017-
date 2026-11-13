@@ -226,14 +226,14 @@ const GRP=[];["Builders Guild","Obby Makers Inc","The Pizza Crew","Knights of BL
 const FCATS=[["Help (Technical Support and Account Issues)","Help"],["Game Design","Development"],["Scripting Helpers","Development"],["Clan Discussion","Club Houses"],["Off Topic","Club Houses"],["Let's Make a Deal","Club Houses"]];
 
 /* ================= STORE ================= */
-const KEY="blox2017_store_v1";
+const KEY="blox2017_store_v2";
 function defaultStore(){const fr=[],rq=[];U.slice(1).forEach((u,i)=>{if(i<14)fr.push(u.id);else if(i<17)rq.push(u.id)});
  const msgs=[];const mr=rng(3);for(let i=0;i<25;i++){const f=i<3?1:pick(U,mr).id;msgs.push({id:i+1,from:f,to:0,subj:i<3?pick(["Welcome to BLOX!","Your account security","New features!"],mr):pick(["hey","trade?","Can you play with me","Join my group","re: my game","Thanks!","question about your game"],mr),body:pick(["Hello! Want to play together sometime?","I saw your avatar, its so cool. Wanna trade?","Hey can you check out my new game? Its called Super Obby.","Thank you for being part of the BLOX community! Have fun and stay safe.","Do you want to join our group? We have events every week."],mr),t:NOW0-i*7e6,read:i>5,box:i<3?"news":"inbox"})}
  const threads=[];const tr=rng(4);for(let i=0;i<50;i++){const c=i%FCATS.length;threads.push({id:i+1,cat:c,title:pick(["How do I make a door that opens?","Rate my game 1-10","Best obby ever???","Selling limiteds cheap","My account got hacked help","Whats your favorite hat","Scripting question: loops","Clan recruitment!","Idea for a new game","Is BLOX down?","I made a sword script","Post your avatar"],tr)+(i>11?" #"+i:""),by:pick(U,tr).id,sticky:i<3,locked:i==2,views:ri(10,9000,tr),posts:Array.from({length:ri(1,8,tr)},(_,k)=>({by:pick(U,tr).id,t:NOW0-(50-i)*36e5+k*6e5,text:pick(["Can someone help me with this?","I think you need to use a script for that.","bump","lol same","Nice work! keep it up","Did you try turning it off and on again?","Try using a while loop with wait().","Thats so cool!!"],tr)}))})}
  const trades=[];[["inbound",2],["inbound",3],["outbound",4],["completed",5],["inactive",6]].forEach(([s,u],k)=>trades.push({id:k+1,with:U[u+2].id,status:s,t:NOW0-k*DAY,mine:[],theirs:[I.find(x=>x.limited).id],myBux:0,theirBux:k*100}));
- return {loggedIn:false,me:{name:"Player",id:0,bc:0,blurb:"Hi! I love BLOX.",status:"",joined:now()},bux:1250,inv:[I.find(x=>x.sub=="Faces").id,I.find(x=>x.sub=="T-Shirts").id,I.find(x=>x.limited).id],passes:[],
+ return {loggedIn:true,me:{name:"Player",id:0,bc:0,blurb:"Hi! I love BLOX.",status:"",joined:now()},bux:1250,inv:[I.find(x=>x.sub=="Faces").id,I.find(x=>x.sub=="T-Shirts").id,I.find(x=>x.limited).id],passes:[],
   equipped:[],colors:{head:SKIN,torso:"#0D69AC",la:SKIN,ra:SKIN,ll:"#A34B4B",rl:"#A34B4B"},rig:"R6",scale:{h:100,w:100,hd:100,p:0,bt:0},outfits:[],
-  friends:fr,requests:rq,following:[],followers:[5,6,7],messages:msgs,favGames:[3,7],votes:{},played:[],recent:[2,5,9],groups:[1,3],primaryGroup:1,trades,threads,
+  friends:[],requests:[],following:[],followers:[],messages:[],favGames:[],votes:{},played:[],recent:[],groups:[],primaryGroup:null,trades:[],threads,
   settings:{theme:"light",twofa:false,privMsg:"Everyone",privChat:"Everyone",privInvite:"Friends",privTrade:"Everyone",birthday:"2005-06-15",gender:"",lang:"English",shiftlock:true,quality:7,volume:60,sens:50,invert:false,camMode:"Default (Classic)",moveMode:"Default (Keyboard)",perf:false,gfxMode:"Automatic",notifs:true},
   notifs:[{id:1,kind:"text",text:"Welcome to BLOX! Customize your avatar to get started.",t:now()-6e5,read:false}],txns:[],badges:[],feed:[],comments:{},creations:[],chatlogs:{},myGroupsOwned:[],gameFavs:{},itemFavs:{},blocked:[],nextId:1000}}
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
@@ -250,39 +250,7 @@ const presColor=p=>p==2?"#00A2FF":p==1?"#02B757":p==3?"#F68802":"";
 
 /* ================= GRAPHICS: avatar & thumbs ================= */
 function eqItems(list){return(list||[]).map(itemById).filter(Boolean)}
-function avatarSVG(o={}){ // o: colors, items, size, head(bool), bg
- const c=o.colors||S.colors, it=eqItems(o.items||S.equipped);const by=s=>it.find(x=>x.sub==s);
- const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts"),face=by("Faces"),hat=it.filter(x=>x.top=="Accessories"),gear=it.find(x=>x.top=="Gear"),head=by("Heads");
- const sc=o.scale||{w:100,h:100};const tw=shirt?shirt.color:c.torso, aw=shirt?shirt.color:null;
- let g="";
- const W=(sc.w||100)/100;
- g+=`<g transform="translate(${50-50*W} 0) scale(${W} 1)">`;
- g+=`<rect x="38" y="98" width="11" height="40" fill="${pants?pants.color:c.ll}" stroke="#0002"/><rect x="51" y="98" width="11" height="40" fill="${pants?pants.color:c.rl}" stroke="#0002"/>`;
- g+=`<rect x="38" y="58" width="24" height="40" fill="${tw}" stroke="#0002"/>`;
- if(pants&&!shirt)g+=`<rect x="38" y="92" width="24" height="6" fill="${pants.color}"/>`;
- g+=`<rect x="27" y="58" width="11" height="40" fill="${c.la}" stroke="#0002"/><rect x="62" y="58" width="11" height="40" fill="${c.ra}" stroke="#0002"/>`;
- if(aw)g+=`<rect x="27" y="58" width="11" height="22" fill="${aw}"/><rect x="62" y="58" width="11" height="22" fill="${aw}"/>`;
- if(tee)g+=`<rect x="44" y="64" width="12" height="12" fill="${tee.color}" stroke="#fff"/><circle cx="50" cy="70" r="3" fill="#fff"/>`;
- if(gear)g+=`<rect x="70" y="76" width="4" height="34" fill="${gear.color}" transform="rotate(-20 72 96)"/><rect x="66" y="94" width="12" height="4" fill="#555"/>`;
- g+=`</g>`;
- const hr=head&&head.name.includes("Round")?9:5;
- g+=`<rect x="39" y="34" width="22" height="24" rx="${hr}" fill="${c.head}" stroke="#0002"/>`;
- const fi=face?I.indexOf(face)%5:-1;
- g+=fi==1?`<rect x="45" y="42" width="3" height="5" fill="#111"/><rect x="53" y="42" width="3" height="5" fill="#111"/><path d="M44 50 Q50 56 56 50" stroke="#111" stroke-width="2" fill="#fff"/>`:
-    fi==2?`<path d="M44 44h4M53 44h4" stroke="#111" stroke-width="2"/><path d="M45 51h10" stroke="#111" stroke-width="2"/>`:
-    fi==3?`<circle cx="46" cy="44" r="2" fill="#111"/><circle cx="54" cy="44" r="2" fill="#111"/><circle cx="44" cy="48" r="1" fill="#a55"/><circle cx="56" cy="48" r="1" fill="#a55"/><path d="M45 51 Q50 54 55 51" stroke="#111" stroke-width="1.5" fill="none"/>`:
-    fi==4?`<path d="M44 42l4 2M56 42l-4 2" stroke="#111" stroke-width="2"/><path d="M44 50 Q50 57 56 50Z" fill="#111"/>`:
-    `<ellipse cx="46" cy="44" rx="1.6" ry="2.5" fill="#111"/><ellipse cx="54" cy="44" rx="1.6" ry="2.5" fill="#111"/><path d="M44 50 Q50 55 56 50" stroke="#111" stroke-width="1.6" fill="none"/>`;
- hat.forEach((h,k)=>{const s=h.sub;const col=h.color;
-  if(s=="Hats"){const v=h.seed%4;g+=v==0?`<rect x="36" y="31" width="28" height="4" fill="${col}"/><rect x="41" y="19" width="18" height="13" fill="${col}"/><rect x="41" y="28" width="18" height="2" fill="${h.color2}"/>`:v==1?`<path d="M38 34 L42 22 L46 30 L50 20 L54 30 L58 22 L62 34Z" fill="#F5CD30" stroke="#a80"/>`:v==2?`<path d="M38 36 Q50 16 62 36Z" fill="${col}"/><rect x="50" y="32" width="16" height="3" fill="${col}"/>`:`<path d="M42 34 L50 14 L58 34Z" fill="${col}"/><circle cx="50" cy="14" r="2" fill="${h.color2}"/>`}
-  else if(s=="Hair")g+=`<path d="M38 40 Q38 28 50 29 Q62 28 62 40 L59 36 L41 36Z" fill="${col}"/>`;
-  else if(s=="Face")g+=`<rect x="42" y="41" width="16" height="5" rx="2" fill="#111" opacity=".85"/>`;
-  else if(s=="Neck")g+=`<rect x="39" y="56" width="22" height="5" fill="${col}"/>`;
-  else if(s=="Back")g+=`<path d="M38 62 L18 54 L24 80 L38 76Z M62 62 L82 54 L76 80 L62 76Z" fill="${col}" opacity=".9"/>`;
-  else if(s=="Shoulder")g+=`<rect x="64" y="50" width="9" height="8" fill="${col}"/><rect x="71" y="52" width="3" height="2" fill="orange"/>`;
-  else g+=`<rect x="${46}" y="${s=="Waist"?90:68}" width="8" height="4" fill="${col}"/>`;});
- const vb=o.head?"34 14 32 46":"10 10 80 132";
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${o.size||150}" height="${o.size||150}" style="background:${o.bg||"transparent"};display:block">${g}</svg>`}
+function avatarSVG(o={}){const sz=o.size||150;return `<img src="${renderAvatar({colors:o.colors||S.colors,items:o.items||S.equipped,head:o.head,bg:o.bg})}" width="${sz}" height="${sz}" style="display:block;${o.bg?"background:"+o.bg:""}">`}
 function uAv(u,size,head){if(!u||u.id===0)return avatarSVG({size,head,bg:head?"#dfe3e6":undefined});
  const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10]?.id);if(u.face>=0)items.push(I.filter(x=>x.sub=="Faces")[u.face%9]?.id);
  return avatarSVG({colors:u.colors,items,size,head,bg:head?"#dfe3e6":undefined})}
@@ -299,13 +267,9 @@ function gameThumb(g,w=150,h=150,v=0){const k=g.seed+"_"+w+"_"+h+"_"+v;if(thumbC
  const ax=w*(.3+r()*.4),ay=gy-h*.18,s=h/150;x.fillStyle=SKIN;x.fillRect(ax+3*s,ay,8*s,8*s);x.fillStyle=pick(BRICK,r);x.fillRect(ax,ay+8*s,14*s,12*s);x.fillStyle="#333";x.fillRect(ax+1*s,ay+20*s,12*s,10*s);
  return thumbCache[k]=c.toDataURL()}
 function itemThumb(it,size=110){const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
- let inner;const one=[it.id];
- if(it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads")inner=avatarSVG({colors:{head:SKIN,torso:"#ccc",la:SKIN,ra:SKIN,ll:"#ccc",rl:"#ccc"},items:one,head:true,size});
- else if(it.top=="Clothing")inner=avatarSVG({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:one,size});
- else if(it.top=="Gear"){inner=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}"><g transform="rotate(${it.seed%60-30} 50 50)"><rect x="45" y="12" width="10" height="56" fill="${it.color}" stroke="#0004"/><rect x="34" y="66" width="32" height="7" fill="#555"/><rect x="46" y="72" width="8" height="16" fill="#624732"/></g></svg>`}
- else inner=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="30" r="10" fill="${it.color}"/><path d="M50 40 L35 70 M50 40 L65 60 M50 40 L50 75 L40 95 M50 75 L62 92" stroke="${it.color}" stroke-width="6" fill="none"/></svg>`;
- const svg=inner.replace("<svg ",`<svg `).replace(/style="[^"]*"/,`style="background:#eef0f2"`);
- return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)}
+ if(it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const r=renderAvatar({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads",bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
+ const inner=it.top=="Gear"?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><g transform="rotate(${it.seed%60-30} 50 50)"><rect x="45" y="12" width="10" height="56" fill="${it.color}" stroke="#0004"/><rect x="34" y="66" width="32" height="7" fill="#555"/><rect x="46" y="72" width="8" height="16" fill="#624732"/></g></svg>`:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><circle cx="50" cy="30" r="10" fill="${it.color}"/><path d="M50 40 L35 70 M50 40 L65 60 M50 40 L50 75 L40 95 M50 75 L62 92" stroke="${it.color}" stroke-width="6" fill="none"/></svg>`;
+ return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(inner)}
 function groupEmblem(g,size=64){return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" style="display:block;border-radius:3px"><rect width="64" height="64" fill="${g.color}"/><path d="M32 8 L54 18 V34 Q54 50 32 58 Q10 50 10 34 V18Z" fill="#fff3" stroke="#fff" stroke-width="2"/><text x="32" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Arial">${esc(g.name[0])}</text></svg>`}
 const IC={
  home:'<path d="M3 11 L12 3 L21 11 V21 H15 V14 H9 V21 H3Z"/>',profile:'<circle cx="12" cy="8" r="5"/><path d="M3 22 Q12 10 21 22Z"/>',msg:'<path d="M2 5h20v14H2z M2 5l10 8 10-8" fill="none" stroke="currentColor" stroke-width="2"/>',
@@ -330,28 +294,26 @@ function addTxn(desc,amt,type){S.txns.unshift({t:now(),desc,amt,type,member:S.me
 let ddOpen=null;
 document.addEventListener("click",e=>{if(!e.target.closest(".hb")&&!e.target.closest(".dd")){$$(".dd").forEach(d=>d.remove());ddOpen=null}});
 function renderHeader(){const unread=S.notifs.filter(n=>!n.read).length;
- $("#hdr").innerHTML=`<span class="hb" onclick="toggleSide()">${ico("menu",20,"#fff")}</span>
- <a onclick="go('#/home')" class="logo">BLOX</a>
- <a class="navl hidesm" href="#/games">Games</a><a class="navl hidesm" href="#/catalog">Catalog</a><a class="navl hidesm" href="#/develop">Develop</a><a class="navl hidesm" href="#/upgrades/robux">Bux</a>
+ $("#hdr").innerHTML=`<a onclick="go('#/home')" class="logo">BLOX</a>
+ <a class="navl hidesm" href="#/games">Games</a><a class="navl hidesm" href="#/catalog">Catalog</a><a class="navl hidesm" href="#/develop">Develop</a>
  <div id="search"><svg width="14" height="14" viewBox="0 0 24 24" style="color:#fff">${IC.search}</svg><input placeholder="Search" id="sq"></div>
  <span class="spacer"></span>
- <a class="hidesm" href="#/users/0/profile" style="font-weight:600">${esc(S.me.name)}<span class="small" style="opacity:.7;margin-left:6px">13+</span></a>
+ <a class="hidesm" style="font-weight:600;cursor:default">${esc(S.me.name)}<span class="small" style="opacity:.7;margin-left:6px">13+</span></a>
  ${S.me.bc?`<span class="hb">${bcIcon(S.me.bc,20)}</span>`:""}
- <span class="hb" id="hbux">${ico("bux",20,"#fff")}<span style="margin-left:5px">${fmt(S.bux)}</span></span>
  <span class="hb" id="hgear">${ico("gear",20,"#fff")}</span>
  <span class="hb" id="hbell">${ico("bell",20,"#fff")}${unread?`<span class="bubble">${unread}</span>`:""}</span>`;
  const sq=$("#sq");sq.oninput=()=>{$$(".dd").forEach(d=>d.remove());const v=sq.value.trim();if(!v)return;const d=document.createElement("div");d.className="dd";d.style.left="0";
-  d.innerHTML=["Players","Games","Catalog","Groups","Library"].map(k=>`<div data-k="${k}">Search "${esc(v)}" in ${k}</div>`).join("");$("#search").appendChild(d);
+  d.innerHTML=["Games","Catalog","Library"].map(k=>`<div data-k="${k}">Search "${esc(v)}" in ${k}</div>`).join("");$("#search").appendChild(d);
   d.onclick=e=>{const k=e.target.dataset.k;doSearch(k,v)}};
  sq.onkeydown=e=>{if(e.key=="Enter")doSearch("Games",sq.value.trim())};
  const dd=(id,html)=>{$("#"+id).onclick=e=>{e.stopPropagation();$$(".dd").forEach(d=>d.remove());if(ddOpen==id){ddOpen=null;return}ddOpen=id;const d=document.createElement("div");d.className="dd";d.style.right="0";d.innerHTML=html;$("#"+id).appendChild(d)}};
- dd("hbux",`<div style="cursor:default"><b>${comma(S.bux)}</b> Bux</div><div onclick="go('#/upgrades/robux')">Buy Bux</div><div onclick="go('#/transactions')">My Transactions</div>`);
+/*bux removed*/ 0&&dd("hbux",`<div style="cursor:default"><b>${comma(S.bux)}</b> Bux</div><div onclick="go('#/upgrades/robux')">Buy Bux</div><div onclick="go('#/transactions')">My Transactions</div>`);
  dd("hgear",`<div onclick="go('#/settings')">Settings</div><div onclick="go('#/help')">Help</div><div onclick="showLogin()">Switch Account</div>`);
  $("#hbell").onclick=e=>{e.stopPropagation();$("#notif").classList.toggle("open");renderNotif()};}
 function doSearch(k,v){$$(".dd").forEach(d=>d.remove());const q=encodeURIComponent(v);
  if(k=="Games")go("#/games?q="+q);else if(k=="Catalog")go("#/catalog?q="+q);else if(k=="Players")go("#/search/users?q="+q);else if(k=="Groups")go("#/groups?q="+q);else go("#/develop?tab=Library&q="+q)}
 function toggleSide(){const w=innerWidth<=1300;if(w)document.body.classList.toggle("sideopen");else document.body.classList.toggle("sideclosed")}
-function renderSide(){const route=location.hash;const unreadM=S.messages.filter(m=>!m.read&&m.box!="sent"&&m.box!="archive").length;
+function renderSide(){$("#side").style.display="none";return;const route=location.hash;const unreadM=S.messages.filter(m=>!m.read&&m.box!="sent"&&m.box!="archive").length;
  const L=[["home","Home","#/home"],["profile","Profile","#/users/0/profile"],["msg","Messages","#/messages",unreadM],["friends","Friends","#/friends",S.requests.length],["avatar","Avatar","#/avatar"],["inv","Inventory","#/inventory"],["trade","Trade","#/trade"],["groups","Groups","#/groups"],["forum","Forum","#/forum"],["blog","Blog","#/blog"],["shop","Shop","#/shop"]];
  $("#side").innerHTML=`<a class="me" href="#/users/0/profile">${headshot(meUser(),40,false)}<span>${esc(S.me.name)}</span></a>`+
  L.map(([i,n,h,b])=>`<a class="it ${route.startsWith(h)?"act":""}" href="${h}">${ico(i,18)}${n}${b?`<span class="bubble">${b}</span>`:""}</a>`).join("")+
@@ -372,7 +334,7 @@ function buyFlow(o){ // o:{name,creator,price,thumb,onBuy}
  modal(`<h3>Buy Item</h3><div class="row"><img src="${o.thumb}" width="110" height="110" style="border-radius:3px"><p>Would you like to buy <b>${esc(o.name)}</b> from <b>${esc(o.creator)}</b> for ${o.price?`<b>${buxIco(14)} B$ ${comma(o.price)}</b>`:"<b class='price'>Free</b>"}?</p></div>
  <div class="row" style="margin-top:12px"><button class="btn-green" id="buynow">Buy Now</button><button onclick="closeModal()">Cancel</button></div><p class="small muted">Your balance after this transaction will be B$ ${comma(S.bux-o.price)}.</p>`);
  $("#buynow").onclick=()=>{S.bux-=o.price;addTxn("Purchased "+o.name,-o.price,"Purchases");o.onBuy();save();renderHeader();
-  modal(`<h3>Purchase Complete!</h3><p>You have successfully bought <b>${esc(o.name)}</b>.</p><div class="row"><button class="btn-blue" onclick="closeModal();refresh()">Continue Shopping</button><button onclick="closeModal();go('#/avatar')">Customize Character</button></div>`)}}
+  modal(`<h3>Purchase Complete!</h3><p>You have successfully bought <b>${esc(o.name)}</b>.</p><div class="row"><button class="btn-blue" onclick="closeModal();refresh()">Continue Shopping</button></div>`)}}
 function buyItem(id,price,seller){const it=itemById(id);buyFlow({name:it.name,creator:seller?userById(seller).name:userById(it.creator).name,price:price??it.price,thumb:itemThumb(it),onBuy:()=>{S.inv.push(it.id);it.sales++;if(it.limited==2&&it.remaining>0)it.remaining--}})}
 function buyPass(gid,pid){const g=gameById(gid),p=g.passes.find(x=>x.id==pid);buyFlow({name:p.name,creator:userById(g.creator)?.name||S.me.name,price:p.price,thumb:passIcon(p),onBuy:()=>S.passes.push(p.id)})}
 function passIcon(p){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#${(p.price*7919%0xaaaaaa+0x333333).toString(16).slice(0,6)}"/><text x="50" y="60" font-size="28" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="700">${esc(p.name.slice(0,4))}</text></svg>`)}
@@ -388,7 +350,7 @@ function fakeInstall(gid){modal(`<div style="text-align:center"><h3>Installing B
 
 /* ---- chat dock ---- */
 let dockOpen=false,openChats=[];
-function renderDock(){if(!S.loggedIn){$("#chatdock").innerHTML="";return}
+function renderDock(){if(true){$("#chatdock").innerHTML="";return}
  const fr=S.friends.map(userById).filter(Boolean).sort((a,b)=>(b.pres?1:0)-(a.pres?1:0));const unread=Object.values(S.chatlogs).reduce((a,l)=>a+l.filter(m=>!m.me&&!m.read).length,0);
  let h=`<div class="cpanel"><div class="ch" onclick="dockOpen=!dockOpen;renderDock()"><span>Chat &amp; Party ${unread?`<span class="bubble">${unread}</span>`:""}</span><span>${dockOpen?"▾":"▴"}</span></div>`;
  if(dockOpen)h+=`<div style="padding:6px"><input id="dsrch" placeholder="Search friends" style="width:100%" oninput="$$('.dfr').forEach(r=>r.style.display=r.dataset.n.toLowerCase().includes(this.value.toLowerCase())?'flex':'none')"></div><div style="padding:0 6px 6px"><button class="btn-blue" style="width:100%" onclick="createParty()">Create Party</button></div>${S.party?`<div style="padding:6px;background:var(--bg);font-size:13px"><b>Party:</b> ${S.party.map(i=>esc(userById(i).name)).join(", ")} <a onclick="play(${S.party.length+2})">Join Party Game</a> · <a onclick="S.party=null;save();renderDock()">Leave</a></div>`:""}<div class="cb">${fr.map(u=>`<div class="row dfr" data-n="${esc(u.name)}" style="padding:5px 8px;cursor:pointer" onclick="openChat(${u.id})">${headshot(u,30)}<div><div style="font-size:14px">${esc(u.name)}</div><div class="small muted">${esc(presText(u))}</div></div></div>`).join("")}</div>`;
@@ -403,7 +365,7 @@ function sendChat(id,text){(S.chatlogs[id]=S.chatlogs[id]||[]).push({me:true,tex
 function createParty(){const on=S.friends.map(userById).filter(u=>u.pres);modal(`<h3>Create Party</h3><p>Invite friends:</p>${on.map(u=>`<label class="row" style="padding:3px"><input type="checkbox" value="${u.id}" class="pinv">${headshot(u,28)}${esc(u.name)}</label>`).join("")||"<p class=muted>No friends online.</p>"}<button class="btn-blue" onclick="S.party=$$('.pinv').filter(c=>c.checked).map(c=>+c.value);if(!S.party.length)S.party=null;save();closeModal();renderDock();S.party&&toast('Party created!')">Create</button>`)}
 
 /* ---- events ---- */
-setInterval(()=>{if(!S.loggedIn||$("#game").classList.contains("on"))return;const r=Math.random;const u=pick(U.slice(1),r);const k=Math.floor(r()*4);
+setInterval(()=>{if(!S.loggedIn||$("#game").classList.contains("on"))return;const r=Math.random;const u=pick(U.slice(1),r);const k=1;
  if(k==0&&!isFriend(u.id)&&!S.requests.includes(u.id)){S.requests.push(u.id);notify(`<b>${esc(u.name)}</b> sent you a friend request.`,"freq",{uid:u.id})}
  else if(k==1)notify(`<b>${esc(pick(G,r).name)}</b> was updated.`,"text");
  else if(k==2){const g=pick(GRP,r);notify(`Group shout from <b>${esc(g.name)}</b>: ${esc(g.shout.text)}`,"text")}
@@ -416,15 +378,15 @@ function parseHash(){const h=location.hash.slice(1)||"/home";const [p,q]=h.split
 function route(){clearInterval(curTimer);window.onscroll=null;const {parts,qs}=parseHash();const m=$("#main");
  document.body.classList.toggle("dark",S.settings.theme=="dark");
  S.loggedIn=true;if(false){$("#hdr").style.display=$("#side").style.display="none";m.style.margin="0";m.style.padding="0";m.innerHTML=pageLanding();bindLanding();return}
- $("#hdr").style.display=$("#side").style.display="";m.style.margin="";m.style.padding="";
+ $("#hdr").style.display="";m.style.margin="";m.style.marginLeft="0";m.style.padding="";
  if(parts[0]!="play")stopGame();if(parts[0]!="studio")closeStudio();
- const P={home:pageHome,games:pageGames,catalog:pageCatalog,avatar:pageAvatar,users:pageProfile,friends:pageFriends,messages:pageMessages,groups:pageGroups,trade:pageTrade,inventory:pageInventory,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,forum:pageForum,play:pagePlay,blog:pageBlog,shop:pageShop,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,search:pageUserSearch,studio:pageStudio};
+ const P={home:pageHome,games:pageGames,catalog:pageCatalog,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,play:pagePlay,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,studio:pageStudio};
  const f=P[parts[0]];let html;try{html=f?f(parts,qs):page404()}catch(e){console.error(e);html=page404()}
  if(html!=null){m.innerHTML=html+footer();scrollTo(0,0)}
  renderSide();const af=window._after;window._after=null;af&&af()}
 const after=fn=>window._after=fn;
 window.addEventListener("hashchange",route);
-function footer(){return `<footer><div><a href="#/about">About Us</a><a href="#/jobs">Jobs</a><a href="#/blog">Blog</a><a href="#/parents">Parents</a><a href="#/help">Help</a><a href="#/terms">Terms</a><a href="#/privacy">Privacy</a></div><div style="margin-top:10px"><select onchange="S.settings.lang=this.value;save();toast('Language set to '+this.value)">${["English","Español","Français","Deutsch","Português"].map(l=>`<option ${S.settings.lang==l?"selected":""}>${l}</option>`).join("")}</select></div><p class="small">Character model: "R6 Roblox Noob [Animated]" by Fog (<a href="https://sketchfab.com/fog_">sketchfab.com/fog_</a>), licensed under <a href="http://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>. Font: BobloxClassic.</p><p>©2017 BLOX Corporation (fictional). BLOX, the BLOX logo and Powering Imagination are placeholder marks for this demo.</p></footer>`}
+function footer(){return `<footer><div><a href="#/about">About Us</a><a href="#/jobs">Jobs</a><a href="#/parents">Parents</a><a href="#/help">Help</a><a href="#/terms">Terms</a><a href="#/privacy">Privacy</a></div><div style="margin-top:10px"><select onchange="S.settings.lang=this.value;save();toast('Language set to '+this.value)">${["English","Español","Français","Deutsch","Português"].map(l=>`<option ${S.settings.lang==l?"selected":""}>${l}</option>`).join("")}</select></div><p class="small">Character model: "R6 Roblox Noob [Animated]" by Fog (<a href="https://sketchfab.com/fog_">sketchfab.com/fog_</a>), licensed under <a href="http://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>. Font: BobloxClassic.</p><p>©2017 BLOX Corporation (fictional). BLOX, the BLOX logo and Powering Imagination are placeholder marks for this demo.</p></footer>`}
 function page404(){return `<div class="wrap card" style="text-align:center;padding:40px"><svg width="160" height="120" viewBox="0 0 160 120"><rect x="50" y="20" width="60" height="50" fill="#F5CD30"/><circle cx="68" cy="40" r="4"/><circle cx="92" cy="40" r="4"/><path d="M66 58 Q80 48 94 58" stroke="#111" stroke-width="3" fill="none"/><rect x="30" y="80" width="100" height="10" fill="#A1A5A2"/></svg><h2>Page cannot be found or no longer exists</h2><div class="row" style="justify-content:center"><button onclick="history.back()">Go to Previous Page</button><button class="btn-blue" onclick="go('#/home')">Return Home</button></div></div>`}
 function carousel(cards){const id="c"+Math.random().toString(36).slice(2,7);return `<div class="car"><button class="arr l" onclick="$('#${id}').scrollLeft-=600">‹</button><div class="track" id="${id}">${cards}</div><button class="arr r" onclick="$('#${id}').scrollLeft+=600">›</button></div>`}
 function gcard(g){const pct=Math.round(g.up/(g.up+g.dn)*100);return `<div class="gcard" onclick="go('#/games/${g.id}')"><img src="${gameThumb(g)}" loading="lazy"><div class="t">${esc(g.name)}</div><div class="s"><span>${ico("up",11)} ${pct}%</span><span>${fmt(g.playing)} Playing</span></div><div class="tip">By ${esc(userById(g.creator)?.name||S.me.name)}</div></div>`}
@@ -459,15 +421,13 @@ function logout(){save();closeModal();route();renderDock()}
 function pageHome(){const fr=S.friends.map(userById);const rec=S.recent.map(gameById).filter(Boolean);
  const fa=G.filter(g=>fr.some(u=>u.pres==2&&(u.id%40)+1==g.id));
  after(()=>{$("#postbox").onsubmit=e=>{e.preventDefault();const v=$("#postin").value.trim();if(!v)return;S.feed.unshift({by:0,text:v,t:now()});S.me.status=v;save();route()}});
- const feed=[...S.feed.map(f=>({...f,u:meUser()})),...GRP.filter(g=>S.groups.includes(g.id)).map(g=>({u:userById(g.shout.by),text:g.shout.text,t:g.shout.t,grp:g}))].sort((a,b)=>b.t-a.t);
+ const feed=[...S.feed.map(f=>({...f,u:meUser()}))].filter(Boolean).sort((a,b)=>b.t-a.t);
  return `<div class="wrap"><div class="row">${avatarSVG({size:150,head:true,bg:"#dfe3e6"})}<h1>Hello, ${esc(S.me.name)}! ${bcIcon(S.me.bc,28)}</h1></div>
- <div class="sechead"><h2>Friends (${fr.length})</h2><a href="#/friends">See All</a></div>
- <div class="card row" style="overflow:visible;gap:4px">${fr.slice(0,9).map(u=>`<div class="fr" onclick="go('#/users/${u.id}/profile')"><div class="hw">${headshot(u,76)}</div><div class="nm">${esc(u.name)}</div>${u.pres==2?`<div class="pop" onclick="event.stopPropagation()"><b>${esc(gameById((u.id%40)+1).name)}</b><button class="btn-green" style="width:100%;margin-top:6px" onclick="play(${(u.id%40)+1})">Join Game</button></div>`:""}</div>`).join("")||"<p class='muted'>No friends yet.</p>"}</div>
  <div style="display:flex;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:300px">
- ${[["Continue",rec],["Friend Activity",fa],["Favorites",S.favGames.map(gameById).filter(Boolean)],["Recommended",G.slice(10,30)]].map(([t,l])=>`<div class="sechead"><h2>${t}</h2><a href="#/games?sort=${encodeURIComponent(t=="Favorites"?"My Favorite":t=="Continue"?"My Recent":"Popular")}">See All</a></div>${l.length?carousel(l.map(gcard).join("")):"<p class='muted'>Nothing here yet.</p>"}`).join("")}
+ ${[["Continue",rec],["Favorites",S.favGames.map(gameById).filter(Boolean)],["Recommended",G.slice(10,30)]].map(([t,l])=>`<div class="sechead"><h2>${t}</h2><a href="#/games?sort=${encodeURIComponent(t=="Favorites"?"My Favorite":t=="Continue"?"My Recent":"Popular")}">See All</a></div>${l.length?carousel(l.map(gcard).join("")):"<p class='muted'>Nothing here yet.</p>"}`).join("")}
  <div class="sechead"><h2>My Feed</h2></div><form class="card row" id="postbox"><input id="postin" placeholder="What are you up to?" style="flex:1" maxlength="200"><button class="btn-blue">Post</button></form>
  ${feed.map(f=>`<div class="card row" style="align-items:flex-start">${headshot(f.u,48,false)}<div><b>${esc(f.u.name)}</b>${f.grp?` <span class="small muted">in <a href="#/groups/${f.grp.id}">${esc(f.grp.name)}</a></span>`:""}<div>${esc(f.text)}</div><div class="small muted">${ago(f.t)}</div></div></div>`).join("")}
- </div><div style="width:260px" class="hidesm"><div class="sechead"><h2>Blog News</h2><a href="#/blog">See More</a></div><div class="card">${BLOG.slice(0,3).map(b=>`<p><a href="#/blog">${b.t}</a><br><span class="small muted">${b.d}</span></p>`).join("")}</div></div></div></div>`}
+ </div></div></div>`}
 const BLOG=[{t:"Introducing the New Avatar Editor",d:"Oct 10, 2017",b:"Customize your look like never before with body scaling, outfits and more."},{t:"BLOX Developers Conference Recap",d:"Sep 28, 2017",b:"Thanks to all the creators who joined us this year! Here's what we talked about."},{t:"Halloween Event Coming Soon",d:"Sep 21, 2017",b:"Spooky hats, haunted games and a scavenger hunt are on the way."},{t:"Safety Tips for the New School Year",d:"Aug 30, 2017",b:"Keep your account secure with 2-Step Verification and a strong password."}];
 
 const SORTS=["Popular","Top Earning","Top Rated","Featured","Top Favorite","Top Paid","Builders Club","My Recent","My Favorite"];
@@ -498,7 +458,7 @@ function pageGame(id,qs){const g=gameById(id);if(!g)return page404();const tab=q
   const srow=s=>`<div class="row" style="border-bottom:1px solid var(--bd);padding:8px 0"><div class="row" style="gap:2px;width:300px">${s.pl.map(u=>headshot(u,36,false)).join("")}${s.n>6?`<span class="small">+${s.n-6}</span>`:""}</div><div style="flex:1"><div class="small">${s.n} of ${g.maxp} people max</div><div class="bar"><div style="width:${s.n/g.maxp*100}%"></div></div></div><button class="btn-green" onclick="play(${id})">Join</button></div>`;
   tb=`<div class="row between"><h3>Friends' Servers</h3><button onclick="window._srvR=(window._srvR||0)+1;route()">Refresh</button></div>${fs.length?srow({n:fs.length+3,pl:fs}):"<p class='muted'>No friends are playing.</p>"}<h3>Other Servers</h3>${servers.slice((pg-1)*10,pg*10).map(srow).join("")}${pager(pg,Math.ceil(servers.length/10),"spg")}`;window.spg=n=>setQ("sp",n)}
  return `<div class="wrap"><div class="card row wrapflex" style="align-items:flex-start"><div style="position:relative;width:576px;max-width:100%"><img id="gslide" src="${gameThumb(g,576,324,0)}" style="width:100%;display:block;border-radius:3px"><button class="arr" style="position:absolute;left:0;top:45%;opacity:.8;background:#0008;color:#fff;border:0" onclick="show(window._slide-1)">‹</button><button class="arr" style="position:absolute;right:0;top:45%;opacity:.8;background:#0008;color:#fff;border:0" onclick="show(window._slide+1)">›</button><div style="position:absolute;bottom:8px;width:100%;text-align:center">${[0,1,2,3].map(i=>`<span class="gdot" onclick="show(${i})" style="display:inline-block;width:10px;height:10px;border-radius:50%;margin:2px;cursor:pointer;background:${i?"#fff6":"#fff"}"></span>`).join("")}</div></div>
- <div style="flex:1;min-width:260px"><h1>${esc(g.name)}</h1><div>By <a href="#/users/${cr.id}/profile">${esc(cr.name)}</a> ${bcIcon(cr.bc,16)}</div><button class="btn-green" style="width:100%;font-size:28px;margin:16px 0" onclick="play(${id})">▶</button>
+ <div style="flex:1;min-width:260px"><h1>${esc(g.name)}</h1><div>By <b>${esc(cr.name)}</b> ${bcIcon(cr.bc,16)}</div><button class="btn-green" style="width:100%;font-size:28px;margin:16px 0" onclick="play(${id})">▶</button>
  <div class="row between"><a onclick="favGame(${id})" style="color:${fav?"#E8AB2D":"var(--tx2)"}">${ico("star",20)} ${comma(g.fav+(fav?1:0))}</a><div style="flex:1;max-width:200px;position:relative"><div class="row between small"><a onclick="voteGame(${id},1)" style="color:${myv==1?"#02B757":"var(--tx2)"}">${ico("up",18)} ${fmt(up)}</a><a onclick="voteGame(${id},-1)" style="color:${myv==-1?"#D86868":"var(--tx2)"}"><span style="display:inline-block;transform:scaleY(-1)">${ico("up",18)}</span> ${fmt(dn)}</a></div><div class="vote"><div class="up" style="width:${up/(up+dn)*100}%"></div><div class="dn" style="flex:1"></div></div><div id="vtip" class="small" style="color:var(--red)"></div></div></div></div></div>
  <div class="card"><div class="tabs">${["About","Store","Servers"].map(t=>`<div class="${t==tab?"on":""}" onclick="setQ('tab','${t}')">${t}</div>`).join("")}</div>${tb}</div></div>`}
 function favGame(id){S.favGames.includes(id)?S.favGames=S.favGames.filter(x=>x!=id):S.favGames.push(id);save();route()}
@@ -526,7 +486,7 @@ function pageItem(id,qs){const it=itemById(id);if(!it)return page404();const own
  const pts=Array.from({length:30},(_,k)=>it.price*(.7+.6*rng(it.seed+k)()));const rap=Math.round(pts.reduce((a,b)=>a+b)/30);
  const sellers=it.limited?Array.from({length:5},(_,k)=>({u:U[(it.seed+k*7)%U.length],ser:(it.seed+k*31)%5000+1,price:Math.round(rap*(.9+k*.08))})):[];
  return `<div class="wrap"><div class="card row wrapflex" style="align-items:flex-start"><div style="position:relative">${tryOn?avatarSVG({size:420,items:[...S.equipped,id],bg:"#eef0f2"}):`<img src="${itemThumb(it,420)}" width="420" height="420" style="max-width:100%">`}${it.limited?`<span class="ltd" style="top:auto;bottom:8px">LIMITED${it.limited==2?" <b>U</b>":""}</span>`:""}<div><label><input type="checkbox" ${tryOn?"checked":""} onchange="setQ('try',this.checked?1:'')"> Try On</label></div></div>
- <div style="flex:1;min-width:260px"><h1>${esc(it.name)}</h1><div>By <a href="#/users/${cr.id}/profile">${esc(cr.name)}</a></div><div class="small muted">${it.sub}</div>
+ <div style="flex:1;min-width:260px"><h1>${esc(it.name)}</h1><div>By <b>${esc(cr.name)}</b></div><div class="small muted">${it.sub}</div>
  <div class="card" style="background:var(--bg);margin-top:12px"><div class="meta">Price</div><div style="font-size:24px">${it.offsale?"Off Sale":it.price?buxIco(20)+" "+comma(it.price):"<span class='price'>Free</span>"}</div>${own?`<div class="price">✓ Item Owned</div>${it.limited?`<button onclick="sellModal(${id})">Sell</button>`:""}`:it.offsale||(it.limited==2&&!it.remaining)?"":`<button class="btn-green" style="width:100%;font-size:18px" onclick="buyItem(${id})">${it.price?"Buy with B$":"Get"}</button>`}</div>
  <a onclick="S.itemFavs[${id}]=!S.itemFavs[${id}];save();route()" style="color:${fav?"#E8AB2D":"var(--tx2)"}">${ico("star",18)} ${comma(it.fav+(fav?1:0))}</a>
  <table style="margin-top:12px"><tr><td class="muted">Type</td><td>${it.top} / ${it.sub}</td></tr><tr><td class="muted">Genres</td><td>All</td></tr><tr><td class="muted">Updated</td><td>${ago(it.updated)}</td></tr>${it.limited?`<tr><td class="muted">Sales</td><td>${comma(it.sales)}</td></tr><tr><td class="muted">Original Price</td><td>B$ ${comma(it.orig)}</td></tr><tr><td class="muted">Recent Average Price</td><td>B$ ${comma(rap)}</td></tr>`:""}<tr><td class="muted">Description</td><td>A ${it.sub.toLowerCase()} item for your avatar.</td></tr></table></div></div>
@@ -674,7 +634,7 @@ function pageDevelop(parts,qs){const tab=qs.tab||"My Creations",sub=qs.sub||"Gam
  else if(tab=="Library"){const q=(qs.q||"").toLowerCase(),t=qs.lt||"Models";const names={Models:["Tree","House","Car","Sword","Zombie","Brick Wall","Lamp Post","Teleporter","Admin Commands","Spawn Point"],Audio:["Oof","Epic Battle Music","Calm Piano","Rain Ambience","Explosion","Victory Fanfare"],Decals:["Smiley","Logo","Grass Texture","Stop Sign","Arrow"],Plugins:["Building Tools","Lighting Presets","Terrain Helper","Model Resizer"]}[t].filter(n=>n.toLowerCase().includes(q));
   body=`<div class="row"><select onchange="setQ('lt',this.value)">${["Models","Audio","Decals","Plugins"].map(x=>`<option ${x==t?"selected":""}>${x}</option>`).join("")}</select><input id="lq" value="${esc(qs.q||"")}" style="flex:1" placeholder="Search the library"><button class="btn-blue" onclick="setQ('q',$('#lq').value)">Search</button></div><div class="igrid" style="margin-top:8px">${names.map((n,k)=>`<div class="icard" onclick="(S.devAssets=S.devAssets||[]).push({id:nid(),name:'${n}',sub:'${t}'});save();toast('${n} added to your ${t}.')"><img src="${itemThumb({id:"lib"+t+k,top:"x",color:BRICK[k*3+9],seed:k})}"><div class="n">${n}</div><div class="small muted">By ${esc(pick(U,rng(k+t.length)).name)}</div><div class="price">Free</div></div>`).join("")||"<p class=muted>No results.</p>"}</div>`}
  else if(tab=="Developer Exchange")body=`<h2>Developer Exchange (DevEx)</h2><p>Earn real-world rewards for the Bux your games earn. <i>(Demo: no real payouts.)</i></p><table><tr><th>Requirement</th><th>Status</th></tr><tr><td>Be 13 or older</td><td>✓</td></tr><tr><td>Builders Club membership</td><td>${S.me.bc?"✓":"✗"}</td></tr><tr><td>At least 100,000 earned Bux</td><td>${S.bux>=1e5?"✓":"✗"} (${comma(S.bux)})</td></tr></table><button class="btn-green" style="margin-top:10px" onclick="toast('Not eligible yet — keep building!')">Cash Out</button>`;
- else body=`<h2>Builders</h2><p>Resources for creators: tutorials, the API reference and the developer forum.</p><div class="grid">${["Getting Started","Building an Obby","Intro to Scripting","Publishing Your Game","Making Money","Using Terrain"].map((t,k)=>`<div class="card" style="cursor:pointer" onclick="go('#/forum?cat=1')"><img src="${gameThumb({seed:k*55+3},150,80)}" style="width:100%"><b>${t}</b></div>`).join("")}</div>`;
+ else body=`<h2>Builders</h2><p>Resources for creators: tutorials, the API reference and the developer forum.</p><div class="grid">${["Getting Started","Building an Obby","Intro to Scripting","Publishing Your Game","Making Money","Using Terrain"].map((t,k)=>`<div class="card" style="cursor:pointer" onclick="toast('Tutorial coming soon')"><img src="${gameThumb({seed:k*55+3},150,80)}" style="width:100%"><b>${t}</b></div>`).join("")}</div>`;
  return `<div class="wrap"><h1>Develop</h1><div class="tabs">${["My Creations","Library","Developer Exchange","Builders"].map(t=>`<div class="${t==tab?"on":""}" onclick="go('#/develop?tab=${encodeURIComponent(t)}')">${t}</div>`).join("")}</div><div class="card">${body}</div></div>`}
 function uploadAsset(sub){modal(`<h3>Create ${sub}</h3><input id="an" style="width:100%" placeholder="Name"><input type="file" style="margin:8px 0"><button class="btn-blue" onclick="(S.devAssets=S.devAssets||[]).push({id:nid(),name:$('#an').value||'Untitled',sub:'${sub}'});save();closeModal();route()">Upload</button>`)}
 function createGame(){const n=$("#ngn").value.trim()||"Untitled Game";const id=nid();const tpl=window._tpl||"Baseplate";
@@ -737,9 +697,11 @@ function pageText(parts){const [t,b]=TEXT[parts[0]];return `<div class="wrap car
 let NOOB=null;
 function loadNoob(){if(NOOB||!window.THREE||!THREE.GLTFLoader||!THREE.SkeletonUtils)return;
  try{new THREE.GLTFLoader().parse(NOOB_GLTF,"",gl=>{const T=THREE;const wrap=new T.Group();const inner=gl.scene;wrap.add(inner);
-   inner.updateMatrixWorld(true);const bb=new T.Box3().setFromObject(inner);const h=bb.max.y-bb.min.y||1;const s=5/h;inner.scale.multiplyScalar(s);inner.position.y=-bb.min.y*s;inner.rotation.y=Math.PI;
+   inner.updateMatrixWorld(true);const by=n=>{let f=null;inner.traverse(o=>{if(!f&&o.name.startsWith(n))f=o});return f};const hb=by("Head_end"),lb=by("Left Leg_end"),rb=by("Right Leg_end");let top,bot;
+   if(hb&&lb&&rb){top=hb.getWorldPosition(new T.Vector3()).y;bot=Math.min(lb.getWorldPosition(new T.Vector3()).y,rb.getWorldPosition(new T.Vector3()).y)}if(!(top>bot)){const bb=new T.Box3().setFromObject(inner);top=bb.max.y;bot=bb.min.y}
+   const s=5.1/((top-bot)||1);inner.scale.multiplyScalar(s);inner.position.y=-bot*s;inner.rotation.y=Math.PI;
    let img=null;inner.traverse(o=>{if(o.isMesh&&o.material.map)img=o.material.map.image});
-   NOOB={wrap,anims:gl.animations,img};},e=>console.warn("model failed",e))}catch(e){console.warn(e)}}
+   NOOB={wrap,anims:gl.animations,img};onNoobReady();},e=>console.warn("model failed",e))}catch(e){console.warn(e)}}
 const texCache={};
 function noobTexture(head,torso,legs){const k=head+torso+legs;if(texCache[k])return texCache[k];const img=NOOB.img;const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const x=c.getContext("2d");x.drawImage(img,0,0);
  const d=x.getImageData(0,0,c.width,c.height),p=d.data;const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];const H=hx(head),Tt=hx(torso),L=hx(legs);
@@ -769,10 +731,22 @@ function noobBreak(m,scene,debris){const T=THREE,u=m.userData;m.updateMatrixWorl
  [["head",[1.2,1.2,1.2],u.colors.head,4.6],["torso",[2,2,1],u.colors.torso,3],["la",[1,2,1],u.colors.arm,3],["ra",[1,2,1],u.colors.arm,3],["ll",[1,2,1],u.colors.leg,1],["rl",[1,2,1],u.colors.leg,1]].forEach(([k,s,c,y],i)=>{
   const b=new T.Mesh(new T.BoxGeometry(...s),new T.MeshLambertMaterial({color:c}));const bn=u.bones[k];if(bn&&k!="ra"&&k!="la"&&k!="ll"&&k!="rl")bn.getWorldPosition(b.position);else b.position.set(base.x+(i==2?-1.5:i==3?1.5:i==4?-.5:i==5?.5:0),base.y+y,base.z);
   b.rotation.y=m.rotation.y;scene.add(b);debris.push({m:b,v:new T.Vector3((Math.random()-.5)*14,8+Math.random()*8,(Math.random()-.5)*14),r:new T.Vector3(Math.random()*5,Math.random()*5,0),t:now()})});m.visible=false}
+
+/* offscreen renderer: every avatar picture on the site is a render of the model */
+const AVPH="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#dfe3e6"/></svg>');
+const avCache={};let AVR=null;
+function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stringify([o.colors,o.items,!!o.head,o.bg||""]);if(avCache[key])return avCache[key];
+ try{const T=THREE;if(!AVR){const r=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(300,300,false);const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const d=new T.DirectionalLight(0xffffff,.55);d.position.set(-4,6,-8);sc.add(d);AVR={r,sc,cam:new T.PerspectiveCamera(30,1,.1,100)}}
+  const m=makeNoob(o.colors,o.items||[]);m.rotation.y=.4;m.userData.mixer.update(.6);m.updateMatrixWorld(true);noobAnim(m,false,true,null,0,false);AVR.sc.add(m);
+  const c=AVR.cam;if(o.head){c.position.set(-1.1,4.75,-4.6);c.lookAt(0,4.5,0)}else{c.position.set(-3,2.9,-12.5);c.lookAt(0,2.55,0)}
+  AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
+function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
 /* ================= IN-GAME CLIENT ================= */
 let GM=null; // game state
 function pagePlay(parts){const id=+parts[1];const g=gameById(id);if(!g)return page404();if(!window.THREE){$("#main").innerHTML=`<div class="wrap card"><h2>3D engine failed to load</h2><p>The game needs Three.js from cdnjs.cloudflare.com. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`;return null}
- if(GM&&GM.gid==id)return null;stopGame();startGame(g);return null}
+ if(GM&&GM.gid==id)return null;stopGame();loadNoob();
+ if(!NOOB){let n=0;$("#main").innerHTML=`<div class="wrap card" style="text-align:center"><div class="spin"><i></i><i></i><i></i><i></i></div><p>Loading character model…</p></div>`;const iv=setInterval(()=>{n++;if(NOOB){clearInterval(iv);if(location.hash=="#/play/"+id)startGame(g)}else if(n>150){clearInterval(iv);$("#main").innerHTML=`<div class="wrap card"><h2>The character model couldn't load</h2><p>It needs the 3D loader from cdn.jsdelivr.net. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`}},100);return null}
+ startGame(g);return null}
 function stopGame(){if(!GM)return;GM.dead2=true;cancelAnimationFrame(GM.raf);clearInterval(GM.iv);GM.ren.dispose();document.removeEventListener("keydown",GM.kd);document.removeEventListener("keyup",GM.ku);window.removeEventListener("resize",GM.rs);try{document.exitPointerLock&&document.exitPointerLock()}catch(e){}$("#game").classList.remove("on");$("#game").innerHTML="";GM=null}
 function leaveGame(){const id=GM.gid;stopGame();go("#/games/"+id)}
 let AC=null;function sfx(kind){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const vol=S.settings.volume/100;if(!vol)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
@@ -783,7 +757,7 @@ const nameColor=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))|0;return N
 const BADWORDS=["noob","stupid","dumb","idiot","scam","hate"];
 const filt=t=>t.replace(new RegExp("\\b("+BADWORDS.join("|")+")\\b","gi"),m=>"#".repeat(m.length));
 function studTex(){const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");x.fillStyle="#8c8f8d";x.fillRect(0,0,64,64);x.fillStyle="#9fa3a0";x.beginPath();x.arc(32,32,14,0,7);x.fill();x.strokeStyle="#6e716f";x.lineWidth=3;x.beginPath();x.arc(32,34,14,0.2,3);x.stroke();x.strokeStyle="#7a7d7b";x.strokeRect(0,0,64,64);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
-function makeChar(colors,items,opts={}){const T=THREE;if(NOOB&&!opts.box)return makeNoob(colors,items);const grp=new T.Group();const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts");
+function makeChar(colors,items,opts={}){const T=THREE;return makeNoob(colors,items);const grp=new T.Group();const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts");
  const M=c=>new T.MeshLambertMaterial({color:c});const box=(w,h,d,c)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),M(c));m.castShadow=true;return m};
  const torso=box(2,2,1,shirt?shirt.color:colors.torso);torso.position.y=3;grp.add(torso);
  if(tee){const d=box(.8,.8,.02,tee.color);d.position.set(0,3.2,-.51);grp.add(d)}

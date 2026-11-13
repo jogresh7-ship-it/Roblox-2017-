@@ -3,9 +3,11 @@
 let NOOB=null;
 function loadNoob(){if(NOOB||!window.THREE||!THREE.GLTFLoader||!THREE.SkeletonUtils)return;
  try{new THREE.GLTFLoader().parse(NOOB_GLTF,"",gl=>{const T=THREE;const wrap=new T.Group();const inner=gl.scene;wrap.add(inner);
-   inner.updateMatrixWorld(true);const bb=new T.Box3().setFromObject(inner);const h=bb.max.y-bb.min.y||1;const s=5/h;inner.scale.multiplyScalar(s);inner.position.y=-bb.min.y*s;inner.rotation.y=Math.PI;
+   inner.updateMatrixWorld(true);const by=n=>{let f=null;inner.traverse(o=>{if(!f&&o.name.startsWith(n))f=o});return f};const hb=by("Head_end"),lb=by("Left Leg_end"),rb=by("Right Leg_end");let top,bot;
+   if(hb&&lb&&rb){top=hb.getWorldPosition(new T.Vector3()).y;bot=Math.min(lb.getWorldPosition(new T.Vector3()).y,rb.getWorldPosition(new T.Vector3()).y)}if(!(top>bot)){const bb=new T.Box3().setFromObject(inner);top=bb.max.y;bot=bb.min.y}
+   const s=5.1/((top-bot)||1);inner.scale.multiplyScalar(s);inner.position.y=-bot*s;inner.rotation.y=Math.PI;
    let img=null;inner.traverse(o=>{if(o.isMesh&&o.material.map)img=o.material.map.image});
-   NOOB={wrap,anims:gl.animations,img};},e=>console.warn("model failed",e))}catch(e){console.warn(e)}}
+   NOOB={wrap,anims:gl.animations,img};onNoobReady();},e=>console.warn("model failed",e))}catch(e){console.warn(e)}}
 const texCache={};
 function noobTexture(head,torso,legs){const k=head+torso+legs;if(texCache[k])return texCache[k];const img=NOOB.img;const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const x=c.getContext("2d");x.drawImage(img,0,0);
  const d=x.getImageData(0,0,c.width,c.height),p=d.data;const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];const H=hx(head),Tt=hx(torso),L=hx(legs);
@@ -35,3 +37,13 @@ function noobBreak(m,scene,debris){const T=THREE,u=m.userData;m.updateMatrixWorl
  [["head",[1.2,1.2,1.2],u.colors.head,4.6],["torso",[2,2,1],u.colors.torso,3],["la",[1,2,1],u.colors.arm,3],["ra",[1,2,1],u.colors.arm,3],["ll",[1,2,1],u.colors.leg,1],["rl",[1,2,1],u.colors.leg,1]].forEach(([k,s,c,y],i)=>{
   const b=new T.Mesh(new T.BoxGeometry(...s),new T.MeshLambertMaterial({color:c}));const bn=u.bones[k];if(bn&&k!="ra"&&k!="la"&&k!="ll"&&k!="rl")bn.getWorldPosition(b.position);else b.position.set(base.x+(i==2?-1.5:i==3?1.5:i==4?-.5:i==5?.5:0),base.y+y,base.z);
   b.rotation.y=m.rotation.y;scene.add(b);debris.push({m:b,v:new T.Vector3((Math.random()-.5)*14,8+Math.random()*8,(Math.random()-.5)*14),r:new T.Vector3(Math.random()*5,Math.random()*5,0),t:now()})});m.visible=false}
+
+/* offscreen renderer: every avatar picture on the site is a render of the model */
+const AVPH="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#dfe3e6"/></svg>');
+const avCache={};let AVR=null;
+function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stringify([o.colors,o.items,!!o.head,o.bg||""]);if(avCache[key])return avCache[key];
+ try{const T=THREE;if(!AVR){const r=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(300,300,false);const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const d=new T.DirectionalLight(0xffffff,.55);d.position.set(-4,6,-8);sc.add(d);AVR={r,sc,cam:new T.PerspectiveCamera(30,1,.1,100)}}
+  const m=makeNoob(o.colors,o.items||[]);m.rotation.y=.4;m.userData.mixer.update(.6);m.updateMatrixWorld(true);noobAnim(m,false,true,null,0,false);AVR.sc.add(m);
+  const c=AVR.cam;if(o.head){c.position.set(-1.1,4.75,-4.6);c.lookAt(0,4.5,0)}else{c.position.set(-3,2.9,-12.5);c.lookAt(0,2.55,0)}
+  AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
+function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}

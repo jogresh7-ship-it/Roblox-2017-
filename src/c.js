@@ -9,28 +9,26 @@ function addTxn(desc,amt,type){S.txns.unshift({t:now(),desc,amt,type,member:S.me
 let ddOpen=null;
 document.addEventListener("click",e=>{if(!e.target.closest(".hb")&&!e.target.closest(".dd")){$$(".dd").forEach(d=>d.remove());ddOpen=null}});
 function renderHeader(){const unread=S.notifs.filter(n=>!n.read).length;
- $("#hdr").innerHTML=`<span class="hb" onclick="toggleSide()">${ico("menu",20,"#fff")}</span>
- <a onclick="go('#/home')" class="logo">BLOX</a>
- <a class="navl hidesm" href="#/games">Games</a><a class="navl hidesm" href="#/catalog">Catalog</a><a class="navl hidesm" href="#/develop">Develop</a><a class="navl hidesm" href="#/upgrades/robux">Bux</a>
+ $("#hdr").innerHTML=`<a onclick="go('#/home')" class="logo">BLOX</a>
+ <a class="navl hidesm" href="#/games">Games</a><a class="navl hidesm" href="#/catalog">Catalog</a><a class="navl hidesm" href="#/develop">Develop</a>
  <div id="search"><svg width="14" height="14" viewBox="0 0 24 24" style="color:#fff">${IC.search}</svg><input placeholder="Search" id="sq"></div>
  <span class="spacer"></span>
- <a class="hidesm" href="#/users/0/profile" style="font-weight:600">${esc(S.me.name)}<span class="small" style="opacity:.7;margin-left:6px">13+</span></a>
+ <a class="hidesm" style="font-weight:600;cursor:default">${esc(S.me.name)}<span class="small" style="opacity:.7;margin-left:6px">13+</span></a>
  ${S.me.bc?`<span class="hb">${bcIcon(S.me.bc,20)}</span>`:""}
- <span class="hb" id="hbux">${ico("bux",20,"#fff")}<span style="margin-left:5px">${fmt(S.bux)}</span></span>
  <span class="hb" id="hgear">${ico("gear",20,"#fff")}</span>
  <span class="hb" id="hbell">${ico("bell",20,"#fff")}${unread?`<span class="bubble">${unread}</span>`:""}</span>`;
  const sq=$("#sq");sq.oninput=()=>{$$(".dd").forEach(d=>d.remove());const v=sq.value.trim();if(!v)return;const d=document.createElement("div");d.className="dd";d.style.left="0";
-  d.innerHTML=["Players","Games","Catalog","Groups","Library"].map(k=>`<div data-k="${k}">Search "${esc(v)}" in ${k}</div>`).join("");$("#search").appendChild(d);
+  d.innerHTML=["Games","Catalog","Library"].map(k=>`<div data-k="${k}">Search "${esc(v)}" in ${k}</div>`).join("");$("#search").appendChild(d);
   d.onclick=e=>{const k=e.target.dataset.k;doSearch(k,v)}};
  sq.onkeydown=e=>{if(e.key=="Enter")doSearch("Games",sq.value.trim())};
  const dd=(id,html)=>{$("#"+id).onclick=e=>{e.stopPropagation();$$(".dd").forEach(d=>d.remove());if(ddOpen==id){ddOpen=null;return}ddOpen=id;const d=document.createElement("div");d.className="dd";d.style.right="0";d.innerHTML=html;$("#"+id).appendChild(d)}};
- dd("hbux",`<div style="cursor:default"><b>${comma(S.bux)}</b> Bux</div><div onclick="go('#/upgrades/robux')">Buy Bux</div><div onclick="go('#/transactions')">My Transactions</div>`);
+/*bux removed*/ 0&&dd("hbux",`<div style="cursor:default"><b>${comma(S.bux)}</b> Bux</div><div onclick="go('#/upgrades/robux')">Buy Bux</div><div onclick="go('#/transactions')">My Transactions</div>`);
  dd("hgear",`<div onclick="go('#/settings')">Settings</div><div onclick="go('#/help')">Help</div><div onclick="showLogin()">Switch Account</div>`);
  $("#hbell").onclick=e=>{e.stopPropagation();$("#notif").classList.toggle("open");renderNotif()};}
 function doSearch(k,v){$$(".dd").forEach(d=>d.remove());const q=encodeURIComponent(v);
  if(k=="Games")go("#/games?q="+q);else if(k=="Catalog")go("#/catalog?q="+q);else if(k=="Players")go("#/search/users?q="+q);else if(k=="Groups")go("#/groups?q="+q);else go("#/develop?tab=Library&q="+q)}
 function toggleSide(){const w=innerWidth<=1300;if(w)document.body.classList.toggle("sideopen");else document.body.classList.toggle("sideclosed")}
-function renderSide(){const route=location.hash;const unreadM=S.messages.filter(m=>!m.read&&m.box!="sent"&&m.box!="archive").length;
+function renderSide(){$("#side").style.display="none";return;const route=location.hash;const unreadM=S.messages.filter(m=>!m.read&&m.box!="sent"&&m.box!="archive").length;
  const L=[["home","Home","#/home"],["profile","Profile","#/users/0/profile"],["msg","Messages","#/messages",unreadM],["friends","Friends","#/friends",S.requests.length],["avatar","Avatar","#/avatar"],["inv","Inventory","#/inventory"],["trade","Trade","#/trade"],["groups","Groups","#/groups"],["forum","Forum","#/forum"],["blog","Blog","#/blog"],["shop","Shop","#/shop"]];
  $("#side").innerHTML=`<a class="me" href="#/users/0/profile">${headshot(meUser(),40,false)}<span>${esc(S.me.name)}</span></a>`+
  L.map(([i,n,h,b])=>`<a class="it ${route.startsWith(h)?"act":""}" href="${h}">${ico(i,18)}${n}${b?`<span class="bubble">${b}</span>`:""}</a>`).join("")+
@@ -51,7 +49,7 @@ function buyFlow(o){ // o:{name,creator,price,thumb,onBuy}
  modal(`<h3>Buy Item</h3><div class="row"><img src="${o.thumb}" width="110" height="110" style="border-radius:3px"><p>Would you like to buy <b>${esc(o.name)}</b> from <b>${esc(o.creator)}</b> for ${o.price?`<b>${buxIco(14)} B$ ${comma(o.price)}</b>`:"<b class='price'>Free</b>"}?</p></div>
  <div class="row" style="margin-top:12px"><button class="btn-green" id="buynow">Buy Now</button><button onclick="closeModal()">Cancel</button></div><p class="small muted">Your balance after this transaction will be B$ ${comma(S.bux-o.price)}.</p>`);
  $("#buynow").onclick=()=>{S.bux-=o.price;addTxn("Purchased "+o.name,-o.price,"Purchases");o.onBuy();save();renderHeader();
-  modal(`<h3>Purchase Complete!</h3><p>You have successfully bought <b>${esc(o.name)}</b>.</p><div class="row"><button class="btn-blue" onclick="closeModal();refresh()">Continue Shopping</button><button onclick="closeModal();go('#/avatar')">Customize Character</button></div>`)}}
+  modal(`<h3>Purchase Complete!</h3><p>You have successfully bought <b>${esc(o.name)}</b>.</p><div class="row"><button class="btn-blue" onclick="closeModal();refresh()">Continue Shopping</button></div>`)}}
 function buyItem(id,price,seller){const it=itemById(id);buyFlow({name:it.name,creator:seller?userById(seller).name:userById(it.creator).name,price:price??it.price,thumb:itemThumb(it),onBuy:()=>{S.inv.push(it.id);it.sales++;if(it.limited==2&&it.remaining>0)it.remaining--}})}
 function buyPass(gid,pid){const g=gameById(gid),p=g.passes.find(x=>x.id==pid);buyFlow({name:p.name,creator:userById(g.creator)?.name||S.me.name,price:p.price,thumb:passIcon(p),onBuy:()=>S.passes.push(p.id)})}
 function passIcon(p){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#${(p.price*7919%0xaaaaaa+0x333333).toString(16).slice(0,6)}"/><text x="50" y="60" font-size="28" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="700">${esc(p.name.slice(0,4))}</text></svg>`)}
@@ -67,7 +65,7 @@ function fakeInstall(gid){modal(`<div style="text-align:center"><h3>Installing B
 
 /* ---- chat dock ---- */
 let dockOpen=false,openChats=[];
-function renderDock(){if(!S.loggedIn){$("#chatdock").innerHTML="";return}
+function renderDock(){if(true){$("#chatdock").innerHTML="";return}
  const fr=S.friends.map(userById).filter(Boolean).sort((a,b)=>(b.pres?1:0)-(a.pres?1:0));const unread=Object.values(S.chatlogs).reduce((a,l)=>a+l.filter(m=>!m.me&&!m.read).length,0);
  let h=`<div class="cpanel"><div class="ch" onclick="dockOpen=!dockOpen;renderDock()"><span>Chat &amp; Party ${unread?`<span class="bubble">${unread}</span>`:""}</span><span>${dockOpen?"▾":"▴"}</span></div>`;
  if(dockOpen)h+=`<div style="padding:6px"><input id="dsrch" placeholder="Search friends" style="width:100%" oninput="$$('.dfr').forEach(r=>r.style.display=r.dataset.n.toLowerCase().includes(this.value.toLowerCase())?'flex':'none')"></div><div style="padding:0 6px 6px"><button class="btn-blue" style="width:100%" onclick="createParty()">Create Party</button></div>${S.party?`<div style="padding:6px;background:var(--bg);font-size:13px"><b>Party:</b> ${S.party.map(i=>esc(userById(i).name)).join(", ")} <a onclick="play(${S.party.length+2})">Join Party Game</a> · <a onclick="S.party=null;save();renderDock()">Leave</a></div>`:""}<div class="cb">${fr.map(u=>`<div class="row dfr" data-n="${esc(u.name)}" style="padding:5px 8px;cursor:pointer" onclick="openChat(${u.id})">${headshot(u,30)}<div><div style="font-size:14px">${esc(u.name)}</div><div class="small muted">${esc(presText(u))}</div></div></div>`).join("")}</div>`;
@@ -82,7 +80,7 @@ function sendChat(id,text){(S.chatlogs[id]=S.chatlogs[id]||[]).push({me:true,tex
 function createParty(){const on=S.friends.map(userById).filter(u=>u.pres);modal(`<h3>Create Party</h3><p>Invite friends:</p>${on.map(u=>`<label class="row" style="padding:3px"><input type="checkbox" value="${u.id}" class="pinv">${headshot(u,28)}${esc(u.name)}</label>`).join("")||"<p class=muted>No friends online.</p>"}<button class="btn-blue" onclick="S.party=$$('.pinv').filter(c=>c.checked).map(c=>+c.value);if(!S.party.length)S.party=null;save();closeModal();renderDock();S.party&&toast('Party created!')">Create</button>`)}
 
 /* ---- events ---- */
-setInterval(()=>{if(!S.loggedIn||$("#game").classList.contains("on"))return;const r=Math.random;const u=pick(U.slice(1),r);const k=Math.floor(r()*4);
+setInterval(()=>{if(!S.loggedIn||$("#game").classList.contains("on"))return;const r=Math.random;const u=pick(U.slice(1),r);const k=1;
  if(k==0&&!isFriend(u.id)&&!S.requests.includes(u.id)){S.requests.push(u.id);notify(`<b>${esc(u.name)}</b> sent you a friend request.`,"freq",{uid:u.id})}
  else if(k==1)notify(`<b>${esc(pick(G,r).name)}</b> was updated.`,"text");
  else if(k==2){const g=pick(GRP,r);notify(`Group shout from <b>${esc(g.name)}</b>: ${esc(g.shout.text)}`,"text")}
@@ -95,15 +93,15 @@ function parseHash(){const h=location.hash.slice(1)||"/home";const [p,q]=h.split
 function route(){clearInterval(curTimer);window.onscroll=null;const {parts,qs}=parseHash();const m=$("#main");
  document.body.classList.toggle("dark",S.settings.theme=="dark");
  S.loggedIn=true;if(false){$("#hdr").style.display=$("#side").style.display="none";m.style.margin="0";m.style.padding="0";m.innerHTML=pageLanding();bindLanding();return}
- $("#hdr").style.display=$("#side").style.display="";m.style.margin="";m.style.padding="";
+ $("#hdr").style.display="";m.style.margin="";m.style.marginLeft="0";m.style.padding="";
  if(parts[0]!="play")stopGame();if(parts[0]!="studio")closeStudio();
- const P={home:pageHome,games:pageGames,catalog:pageCatalog,avatar:pageAvatar,users:pageProfile,friends:pageFriends,messages:pageMessages,groups:pageGroups,trade:pageTrade,inventory:pageInventory,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,forum:pageForum,play:pagePlay,blog:pageBlog,shop:pageShop,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,search:pageUserSearch,studio:pageStudio};
+ const P={home:pageHome,games:pageGames,catalog:pageCatalog,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,play:pagePlay,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,studio:pageStudio};
  const f=P[parts[0]];let html;try{html=f?f(parts,qs):page404()}catch(e){console.error(e);html=page404()}
  if(html!=null){m.innerHTML=html+footer();scrollTo(0,0)}
  renderSide();const af=window._after;window._after=null;af&&af()}
 const after=fn=>window._after=fn;
 window.addEventListener("hashchange",route);
-function footer(){return `<footer><div><a href="#/about">About Us</a><a href="#/jobs">Jobs</a><a href="#/blog">Blog</a><a href="#/parents">Parents</a><a href="#/help">Help</a><a href="#/terms">Terms</a><a href="#/privacy">Privacy</a></div><div style="margin-top:10px"><select onchange="S.settings.lang=this.value;save();toast('Language set to '+this.value)">${["English","Español","Français","Deutsch","Português"].map(l=>`<option ${S.settings.lang==l?"selected":""}>${l}</option>`).join("")}</select></div><p class="small">Character model: "R6 Roblox Noob [Animated]" by Fog (<a href="https://sketchfab.com/fog_">sketchfab.com/fog_</a>), licensed under <a href="http://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>. Font: BobloxClassic.</p><p>©2017 BLOX Corporation (fictional). BLOX, the BLOX logo and Powering Imagination are placeholder marks for this demo.</p></footer>`}
+function footer(){return `<footer><div><a href="#/about">About Us</a><a href="#/jobs">Jobs</a><a href="#/parents">Parents</a><a href="#/help">Help</a><a href="#/terms">Terms</a><a href="#/privacy">Privacy</a></div><div style="margin-top:10px"><select onchange="S.settings.lang=this.value;save();toast('Language set to '+this.value)">${["English","Español","Français","Deutsch","Português"].map(l=>`<option ${S.settings.lang==l?"selected":""}>${l}</option>`).join("")}</select></div><p class="small">Character model: "R6 Roblox Noob [Animated]" by Fog (<a href="https://sketchfab.com/fog_">sketchfab.com/fog_</a>), licensed under <a href="http://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>. Font: BobloxClassic.</p><p>©2017 BLOX Corporation (fictional). BLOX, the BLOX logo and Powering Imagination are placeholder marks for this demo.</p></footer>`}
 function page404(){return `<div class="wrap card" style="text-align:center;padding:40px"><svg width="160" height="120" viewBox="0 0 160 120"><rect x="50" y="20" width="60" height="50" fill="#F5CD30"/><circle cx="68" cy="40" r="4"/><circle cx="92" cy="40" r="4"/><path d="M66 58 Q80 48 94 58" stroke="#111" stroke-width="3" fill="none"/><rect x="30" y="80" width="100" height="10" fill="#A1A5A2"/></svg><h2>Page cannot be found or no longer exists</h2><div class="row" style="justify-content:center"><button onclick="history.back()">Go to Previous Page</button><button class="btn-blue" onclick="go('#/home')">Return Home</button></div></div>`}
 function carousel(cards){const id="c"+Math.random().toString(36).slice(2,7);return `<div class="car"><button class="arr l" onclick="$('#${id}').scrollLeft-=600">‹</button><div class="track" id="${id}">${cards}</div><button class="arr r" onclick="$('#${id}').scrollLeft+=600">›</button></div>`}
 function gcard(g){const pct=Math.round(g.up/(g.up+g.dn)*100);return `<div class="gcard" onclick="go('#/games/${g.id}')"><img src="${gameThumb(g)}" loading="lazy"><div class="t">${esc(g.name)}</div><div class="s"><span>${ico("up",11)} ${pct}%</span><span>${fmt(g.playing)} Playing</span></div><div class="tip">By ${esc(userById(g.creator)?.name||S.me.name)}</div></div>`}

@@ -1,7 +1,9 @@
 /* ================= IN-GAME CLIENT ================= */
 let GM=null; // game state
 function pagePlay(parts){const id=+parts[1];const g=gameById(id);if(!g)return page404();if(!window.THREE){$("#main").innerHTML=`<div class="wrap card"><h2>3D engine failed to load</h2><p>The game needs Three.js from cdnjs.cloudflare.com. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`;return null}
- if(GM&&GM.gid==id)return null;stopGame();startGame(g);return null}
+ if(GM&&GM.gid==id)return null;stopGame();loadNoob();
+ if(!NOOB){let n=0;$("#main").innerHTML=`<div class="wrap card" style="text-align:center"><div class="spin"><i></i><i></i><i></i><i></i></div><p>Loading character model…</p></div>`;const iv=setInterval(()=>{n++;if(NOOB){clearInterval(iv);if(location.hash=="#/play/"+id)startGame(g)}else if(n>150){clearInterval(iv);$("#main").innerHTML=`<div class="wrap card"><h2>The character model couldn't load</h2><p>It needs the 3D loader from cdn.jsdelivr.net. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`}},100);return null}
+ startGame(g);return null}
 function stopGame(){if(!GM)return;GM.dead2=true;cancelAnimationFrame(GM.raf);clearInterval(GM.iv);GM.ren.dispose();document.removeEventListener("keydown",GM.kd);document.removeEventListener("keyup",GM.ku);window.removeEventListener("resize",GM.rs);try{document.exitPointerLock&&document.exitPointerLock()}catch(e){}$("#game").classList.remove("on");$("#game").innerHTML="";GM=null}
 function leaveGame(){const id=GM.gid;stopGame();go("#/games/"+id)}
 let AC=null;function sfx(kind){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const vol=S.settings.volume/100;if(!vol)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
@@ -12,7 +14,7 @@ const nameColor=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))|0;return N
 const BADWORDS=["noob","stupid","dumb","idiot","scam","hate"];
 const filt=t=>t.replace(new RegExp("\\b("+BADWORDS.join("|")+")\\b","gi"),m=>"#".repeat(m.length));
 function studTex(){const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");x.fillStyle="#8c8f8d";x.fillRect(0,0,64,64);x.fillStyle="#9fa3a0";x.beginPath();x.arc(32,32,14,0,7);x.fill();x.strokeStyle="#6e716f";x.lineWidth=3;x.beginPath();x.arc(32,34,14,0.2,3);x.stroke();x.strokeStyle="#7a7d7b";x.strokeRect(0,0,64,64);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
-function makeChar(colors,items,opts={}){const T=THREE;if(NOOB&&!opts.box)return makeNoob(colors,items);const grp=new T.Group();const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts");
+function makeChar(colors,items,opts={}){const T=THREE;return makeNoob(colors,items);const grp=new T.Group();const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts");
  const M=c=>new T.MeshLambertMaterial({color:c});const box=(w,h,d,c)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),M(c));m.castShadow=true;return m};
  const torso=box(2,2,1,shirt?shirt.color:colors.torso);torso.position.y=3;grp.add(torso);
  if(tee){const d=box(.8,.8,.02,tee.color);d.position.set(0,3.2,-.51);grp.add(d)}

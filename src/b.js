@@ -52,14 +52,14 @@ const GRP=[];["Builders Guild","Obby Makers Inc","The Pizza Crew","Knights of BL
 const FCATS=[["Help (Technical Support and Account Issues)","Help"],["Game Design","Development"],["Scripting Helpers","Development"],["Clan Discussion","Club Houses"],["Off Topic","Club Houses"],["Let's Make a Deal","Club Houses"]];
 
 /* ================= STORE ================= */
-const KEY="blox2017_store_v1";
+const KEY="blox2017_store_v2";
 function defaultStore(){const fr=[],rq=[];U.slice(1).forEach((u,i)=>{if(i<14)fr.push(u.id);else if(i<17)rq.push(u.id)});
  const msgs=[];const mr=rng(3);for(let i=0;i<25;i++){const f=i<3?1:pick(U,mr).id;msgs.push({id:i+1,from:f,to:0,subj:i<3?pick(["Welcome to BLOX!","Your account security","New features!"],mr):pick(["hey","trade?","Can you play with me","Join my group","re: my game","Thanks!","question about your game"],mr),body:pick(["Hello! Want to play together sometime?","I saw your avatar, its so cool. Wanna trade?","Hey can you check out my new game? Its called Super Obby.","Thank you for being part of the BLOX community! Have fun and stay safe.","Do you want to join our group? We have events every week."],mr),t:NOW0-i*7e6,read:i>5,box:i<3?"news":"inbox"})}
  const threads=[];const tr=rng(4);for(let i=0;i<50;i++){const c=i%FCATS.length;threads.push({id:i+1,cat:c,title:pick(["How do I make a door that opens?","Rate my game 1-10","Best obby ever???","Selling limiteds cheap","My account got hacked help","Whats your favorite hat","Scripting question: loops","Clan recruitment!","Idea for a new game","Is BLOX down?","I made a sword script","Post your avatar"],tr)+(i>11?" #"+i:""),by:pick(U,tr).id,sticky:i<3,locked:i==2,views:ri(10,9000,tr),posts:Array.from({length:ri(1,8,tr)},(_,k)=>({by:pick(U,tr).id,t:NOW0-(50-i)*36e5+k*6e5,text:pick(["Can someone help me with this?","I think you need to use a script for that.","bump","lol same","Nice work! keep it up","Did you try turning it off and on again?","Try using a while loop with wait().","Thats so cool!!"],tr)}))})}
  const trades=[];[["inbound",2],["inbound",3],["outbound",4],["completed",5],["inactive",6]].forEach(([s,u],k)=>trades.push({id:k+1,with:U[u+2].id,status:s,t:NOW0-k*DAY,mine:[],theirs:[I.find(x=>x.limited).id],myBux:0,theirBux:k*100}));
- return {loggedIn:false,me:{name:"Player",id:0,bc:0,blurb:"Hi! I love BLOX.",status:"",joined:now()},bux:1250,inv:[I.find(x=>x.sub=="Faces").id,I.find(x=>x.sub=="T-Shirts").id,I.find(x=>x.limited).id],passes:[],
+ return {loggedIn:true,me:{name:"Player",id:0,bc:0,blurb:"Hi! I love BLOX.",status:"",joined:now()},bux:1250,inv:[I.find(x=>x.sub=="Faces").id,I.find(x=>x.sub=="T-Shirts").id,I.find(x=>x.limited).id],passes:[],
   equipped:[],colors:{head:SKIN,torso:"#0D69AC",la:SKIN,ra:SKIN,ll:"#A34B4B",rl:"#A34B4B"},rig:"R6",scale:{h:100,w:100,hd:100,p:0,bt:0},outfits:[],
-  friends:fr,requests:rq,following:[],followers:[5,6,7],messages:msgs,favGames:[3,7],votes:{},played:[],recent:[2,5,9],groups:[1,3],primaryGroup:1,trades,threads,
+  friends:[],requests:[],following:[],followers:[],messages:[],favGames:[],votes:{},played:[],recent:[],groups:[],primaryGroup:null,trades:[],threads,
   settings:{theme:"light",twofa:false,privMsg:"Everyone",privChat:"Everyone",privInvite:"Friends",privTrade:"Everyone",birthday:"2005-06-15",gender:"",lang:"English",shiftlock:true,quality:7,volume:60,sens:50,invert:false,camMode:"Default (Classic)",moveMode:"Default (Keyboard)",perf:false,gfxMode:"Automatic",notifs:true},
   notifs:[{id:1,kind:"text",text:"Welcome to BLOX! Customize your avatar to get started.",t:now()-6e5,read:false}],txns:[],badges:[],feed:[],comments:{},creations:[],chatlogs:{},myGroupsOwned:[],gameFavs:{},itemFavs:{},blocked:[],nextId:1000}}
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
@@ -76,39 +76,7 @@ const presColor=p=>p==2?"#00A2FF":p==1?"#02B757":p==3?"#F68802":"";
 
 /* ================= GRAPHICS: avatar & thumbs ================= */
 function eqItems(list){return(list||[]).map(itemById).filter(Boolean)}
-function avatarSVG(o={}){ // o: colors, items, size, head(bool), bg
- const c=o.colors||S.colors, it=eqItems(o.items||S.equipped);const by=s=>it.find(x=>x.sub==s);
- const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts"),face=by("Faces"),hat=it.filter(x=>x.top=="Accessories"),gear=it.find(x=>x.top=="Gear"),head=by("Heads");
- const sc=o.scale||{w:100,h:100};const tw=shirt?shirt.color:c.torso, aw=shirt?shirt.color:null;
- let g="";
- const W=(sc.w||100)/100;
- g+=`<g transform="translate(${50-50*W} 0) scale(${W} 1)">`;
- g+=`<rect x="38" y="98" width="11" height="40" fill="${pants?pants.color:c.ll}" stroke="#0002"/><rect x="51" y="98" width="11" height="40" fill="${pants?pants.color:c.rl}" stroke="#0002"/>`;
- g+=`<rect x="38" y="58" width="24" height="40" fill="${tw}" stroke="#0002"/>`;
- if(pants&&!shirt)g+=`<rect x="38" y="92" width="24" height="6" fill="${pants.color}"/>`;
- g+=`<rect x="27" y="58" width="11" height="40" fill="${c.la}" stroke="#0002"/><rect x="62" y="58" width="11" height="40" fill="${c.ra}" stroke="#0002"/>`;
- if(aw)g+=`<rect x="27" y="58" width="11" height="22" fill="${aw}"/><rect x="62" y="58" width="11" height="22" fill="${aw}"/>`;
- if(tee)g+=`<rect x="44" y="64" width="12" height="12" fill="${tee.color}" stroke="#fff"/><circle cx="50" cy="70" r="3" fill="#fff"/>`;
- if(gear)g+=`<rect x="70" y="76" width="4" height="34" fill="${gear.color}" transform="rotate(-20 72 96)"/><rect x="66" y="94" width="12" height="4" fill="#555"/>`;
- g+=`</g>`;
- const hr=head&&head.name.includes("Round")?9:5;
- g+=`<rect x="39" y="34" width="22" height="24" rx="${hr}" fill="${c.head}" stroke="#0002"/>`;
- const fi=face?I.indexOf(face)%5:-1;
- g+=fi==1?`<rect x="45" y="42" width="3" height="5" fill="#111"/><rect x="53" y="42" width="3" height="5" fill="#111"/><path d="M44 50 Q50 56 56 50" stroke="#111" stroke-width="2" fill="#fff"/>`:
-    fi==2?`<path d="M44 44h4M53 44h4" stroke="#111" stroke-width="2"/><path d="M45 51h10" stroke="#111" stroke-width="2"/>`:
-    fi==3?`<circle cx="46" cy="44" r="2" fill="#111"/><circle cx="54" cy="44" r="2" fill="#111"/><circle cx="44" cy="48" r="1" fill="#a55"/><circle cx="56" cy="48" r="1" fill="#a55"/><path d="M45 51 Q50 54 55 51" stroke="#111" stroke-width="1.5" fill="none"/>`:
-    fi==4?`<path d="M44 42l4 2M56 42l-4 2" stroke="#111" stroke-width="2"/><path d="M44 50 Q50 57 56 50Z" fill="#111"/>`:
-    `<ellipse cx="46" cy="44" rx="1.6" ry="2.5" fill="#111"/><ellipse cx="54" cy="44" rx="1.6" ry="2.5" fill="#111"/><path d="M44 50 Q50 55 56 50" stroke="#111" stroke-width="1.6" fill="none"/>`;
- hat.forEach((h,k)=>{const s=h.sub;const col=h.color;
-  if(s=="Hats"){const v=h.seed%4;g+=v==0?`<rect x="36" y="31" width="28" height="4" fill="${col}"/><rect x="41" y="19" width="18" height="13" fill="${col}"/><rect x="41" y="28" width="18" height="2" fill="${h.color2}"/>`:v==1?`<path d="M38 34 L42 22 L46 30 L50 20 L54 30 L58 22 L62 34Z" fill="#F5CD30" stroke="#a80"/>`:v==2?`<path d="M38 36 Q50 16 62 36Z" fill="${col}"/><rect x="50" y="32" width="16" height="3" fill="${col}"/>`:`<path d="M42 34 L50 14 L58 34Z" fill="${col}"/><circle cx="50" cy="14" r="2" fill="${h.color2}"/>`}
-  else if(s=="Hair")g+=`<path d="M38 40 Q38 28 50 29 Q62 28 62 40 L59 36 L41 36Z" fill="${col}"/>`;
-  else if(s=="Face")g+=`<rect x="42" y="41" width="16" height="5" rx="2" fill="#111" opacity=".85"/>`;
-  else if(s=="Neck")g+=`<rect x="39" y="56" width="22" height="5" fill="${col}"/>`;
-  else if(s=="Back")g+=`<path d="M38 62 L18 54 L24 80 L38 76Z M62 62 L82 54 L76 80 L62 76Z" fill="${col}" opacity=".9"/>`;
-  else if(s=="Shoulder")g+=`<rect x="64" y="50" width="9" height="8" fill="${col}"/><rect x="71" y="52" width="3" height="2" fill="orange"/>`;
-  else g+=`<rect x="${46}" y="${s=="Waist"?90:68}" width="8" height="4" fill="${col}"/>`;});
- const vb=o.head?"34 14 32 46":"10 10 80 132";
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${o.size||150}" height="${o.size||150}" style="background:${o.bg||"transparent"};display:block">${g}</svg>`}
+function avatarSVG(o={}){const sz=o.size||150;return `<img src="${renderAvatar({colors:o.colors||S.colors,items:o.items||S.equipped,head:o.head,bg:o.bg})}" width="${sz}" height="${sz}" style="display:block;${o.bg?"background:"+o.bg:""}">`}
 function uAv(u,size,head){if(!u||u.id===0)return avatarSVG({size,head,bg:head?"#dfe3e6":undefined});
  const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10]?.id);if(u.face>=0)items.push(I.filter(x=>x.sub=="Faces")[u.face%9]?.id);
  return avatarSVG({colors:u.colors,items,size,head,bg:head?"#dfe3e6":undefined})}
@@ -125,13 +93,9 @@ function gameThumb(g,w=150,h=150,v=0){const k=g.seed+"_"+w+"_"+h+"_"+v;if(thumbC
  const ax=w*(.3+r()*.4),ay=gy-h*.18,s=h/150;x.fillStyle=SKIN;x.fillRect(ax+3*s,ay,8*s,8*s);x.fillStyle=pick(BRICK,r);x.fillRect(ax,ay+8*s,14*s,12*s);x.fillStyle="#333";x.fillRect(ax+1*s,ay+20*s,12*s,10*s);
  return thumbCache[k]=c.toDataURL()}
 function itemThumb(it,size=110){const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
- let inner;const one=[it.id];
- if(it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads")inner=avatarSVG({colors:{head:SKIN,torso:"#ccc",la:SKIN,ra:SKIN,ll:"#ccc",rl:"#ccc"},items:one,head:true,size});
- else if(it.top=="Clothing")inner=avatarSVG({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:one,size});
- else if(it.top=="Gear"){inner=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}"><g transform="rotate(${it.seed%60-30} 50 50)"><rect x="45" y="12" width="10" height="56" fill="${it.color}" stroke="#0004"/><rect x="34" y="66" width="32" height="7" fill="#555"/><rect x="46" y="72" width="8" height="16" fill="#624732"/></g></svg>`}
- else inner=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="30" r="10" fill="${it.color}"/><path d="M50 40 L35 70 M50 40 L65 60 M50 40 L50 75 L40 95 M50 75 L62 92" stroke="${it.color}" stroke-width="6" fill="none"/></svg>`;
- const svg=inner.replace("<svg ",`<svg `).replace(/style="[^"]*"/,`style="background:#eef0f2"`);
- return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)}
+ if(it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const r=renderAvatar({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads",bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
+ const inner=it.top=="Gear"?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><g transform="rotate(${it.seed%60-30} 50 50)"><rect x="45" y="12" width="10" height="56" fill="${it.color}" stroke="#0004"/><rect x="34" y="66" width="32" height="7" fill="#555"/><rect x="46" y="72" width="8" height="16" fill="#624732"/></g></svg>`:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><circle cx="50" cy="30" r="10" fill="${it.color}"/><path d="M50 40 L35 70 M50 40 L65 60 M50 40 L50 75 L40 95 M50 75 L62 92" stroke="${it.color}" stroke-width="6" fill="none"/></svg>`;
+ return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(inner)}
 function groupEmblem(g,size=64){return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" style="display:block;border-radius:3px"><rect width="64" height="64" fill="${g.color}"/><path d="M32 8 L54 18 V34 Q54 50 32 58 Q10 50 10 34 V18Z" fill="#fff3" stroke="#fff" stroke-width="2"/><text x="32" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Arial">${esc(g.name[0])}</text></svg>`}
 const IC={
  home:'<path d="M3 11 L12 3 L21 11 V21 H15 V14 H9 V21 H3Z"/>',profile:'<circle cx="12" cy="8" r="5"/><path d="M3 22 Q12 10 21 22Z"/>',msg:'<path d="M2 5h20v14H2z M2 5l10 8 10-8" fill="none" stroke="currentColor" stroke-width="2"/>',
