@@ -27,7 +27,7 @@ function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s
  const hatHolder=new T.Group();m.add(hatHolder);m.userData.hat=hatHolder;
  it.filter(x=>x.top=="Accessories").forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
  noobPlay(m,"Idle");return m}
-function noobPlay(m,name){const u=m.userData;if(u.cur==name||!u.acts[name])return;const a=u.acts[name];a.reset();a.setLoop(name=="Jump"?THREE.LoopOnce:THREE.LoopRepeat);a.clampWhenFinished=true;a.play();if(u.cur&&u.acts[u.cur])a.crossFadeFrom(u.acts[u.cur],.15,false);u.cur=name}
+function noobPlay(m,name){const u=m.userData;if(u.cur==name||!u.acts[name])return;const a=u.acts[name];a.reset();a.setLoop(name=="Jump"?THREE.LoopOnce:THREE.LoopRepeat);a.clampWhenFinished=true;a.play();if(u.cur&&u.acts[u.cur])a.crossFadeFrom(u.acts[u.cur],.25,true);u.cur=name}
 const _v=()=>new THREE.Vector3();
 function noobAnim(m,moving,ground,emote,sw,tool){const u=m.userData;const t=performance.now();const dt=Math.min(.1,(t-u.last)/1000);u.last=t;
  let a=!ground?(u.vy>0?"Jump":"Fall"):moving?(u.speed>20?"RunAnim":"WalkAnim"):emote=="dance"?"Idle2":(emote=="wave"||emote=="point"||emote=="cheer"||tool||sw)?"Tool":"Idle";

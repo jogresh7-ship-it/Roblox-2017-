@@ -28,9 +28,13 @@ function makeChar(colors,items,opts={}){const T=THREE;return makeNoob(colors,ite
 function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played.push(g.id);S.recent=[g.id,...S.recent.filter(x=>x!=g.id)].slice(0,20);save();
  const root=$("#game");root.classList.add("on");
  root.innerHTML=`<div id="loadscr"><span style="position:absolute;top:14px;right:18px;font-size:26px;cursor:pointer" id="lcancel">✕</span><img src="${gameThumb(g,150,150)}" style="border-radius:6px"><h2 class="gfont">${esc(g.name)}</h2><div>By ${esc((userById(g.creator)||meUser()).name)}</div><div class="spin"><i style="background:#fff"></i><i style="background:#fff"></i><i style="background:#fff"></i><i style="background:#fff"></i></div><div id="lstat">Requesting Server...</div></div>
- <div class="gtop"><div class="gbtn" id="bmenu" title="Menu"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.5"/><rect x="9" y="9" width="6" height="6" fill="#fff" transform="rotate(15 12 12)"/></svg></div><div class="gbtn" id="bchat">${ico("chat",18,"#fff")}<span id="cdot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:#E2231A"></span></div><div class="gbtn" id="bbp">${ico("bp",18,"#fff")}</div><span class="spacer"></span><div style="padding-right:10px;cursor:pointer" id="bpl"><b>${esc(S.me.name)}</b> <span class="small" style="opacity:.7">${S.me.bc?"Builders Club":"Account: 13+"}</span></div></div>
+ <div class="gtop"><div class="tbi" id="bmenu" title="Menu (Esc)"><svg viewBox="0 0 32 32"><rect x="5" y="5" width="22" height="22" rx="5" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="12" y="12" width="8" height="8" fill="currentColor" transform="rotate(15 16 16)"/></svg></div>
+ <div class="tbi" id="bchat" title="Chat (/)"><svg viewBox="0 0 32 32"><path d="M6 7h20a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H15l-6 5v-5H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="11" cy="14.5" r="1.6" fill="currentColor"/><circle cx="16" cy="14.5" r="1.6" fill="currentColor"/><circle cx="21" cy="14.5" r="1.6" fill="currentColor"/></svg><span id="cdot"></span></div>
+ <div class="tbi" id="bbp" title="Backpack"><svg viewBox="0 0 32 32"><path d="M11 10V8a5 5 0 0 1 10 0v2" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="7" y="10" width="18" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M7 17h18" stroke="currentColor" stroke-width="2.4"/><rect x="14" y="15" width="4" height="5" rx="1" fill="currentColor"/></svg></div>
+ <span class="spacer"></span><div class="tbname" id="bname"><b>${esc(S.me.name)}</b><span>${S.me.bc?"Builders Club":"Account: 13+"}</span></div><div id="hp"><div></div></div>
+ <div class="tbi" id="bpl" title="Player List (Tab)"><svg viewBox="0 0 32 32"><path d="M11 6h10v5a5 5 0 0 1-10 0z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M11 8H7a4 4 0 0 0 4 5M21 8h4a4 4 0 0 1-4 5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16v4" stroke="currentColor" stroke-width="2.4"/><rect x="8" y="20" width="16" height="6" rx="1" fill="currentColor"/></svg></div></div>
  <div id="gchat"><div class="lines" id="clines"></div><input id="cin2" maxlength="200" placeholder='To chat click here or press "/" key'></div>
- <div id="plist"></div><div id="hotbar"></div><div id="hp"><div></div></div><div id="vign"></div><div id="perf"></div><div id="badgepop"></div>
+ <div id="plist"></div><div id="hotbar"></div><div id="vign"></div><div id="perf"></div><div id="badgepop"></div>
  <svg id="xhair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5" stroke="#fff" stroke-width="2"/></svg>
  <div id="stick"><i></i></div><div id="jumpb"></div><div id="bubbles"></div>
  <div class="gover" id="esc"></div><div class="gover" id="bpfull"></div><div class="gover" id="dlg"></div><div id="rec" style="display:none;position:absolute;top:44px;right:310px;color:#f44;font-weight:700;cursor:pointer">● Recording…</div>`;
@@ -57,7 +61,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  const npcs=[].map((u,k)=>{const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10].id);const m=makeChar(u.colors,items);scene.add(m);const a=k*.8;return{u,m,pos:new T.Vector3(Math.cos(a)*20,1,Math.sin(a)*20),vel:new T.Vector3(),yaw:0,tgt:null,hp:100,dead:false,stage:ri(0,5,r),coins:ri(0,20,r),t:0}});
  const keys={},tools=[{n:"Sword",c:"#A1A5A2",k:"sword"},{n:"Rocket Launcher",c:"#4B974B",k:"rocket"},{n:"Paintball Gun",c:"#0D69AC",k:"paint"},{n:"Gravity Coil",c:"#6E99CA",k:"grav"},{n:"Speed Coil",c:"#C4281C",k:"speed"},...S.inv.map(itemById).filter(i=>i&&i.top=="Gear").filter((v,i,a)=>a.indexOf(v)==i).map(i=>({n:i.name,c:i.color,k:i.name.includes("Coil")?(i.name.includes("Speed")?"speed":"grav"):i.sub=="Ranged"?"paint":i.sub=="Explosive"?"rocket":"sword"}))];
  const slots=tools.slice(0,10).map((t,i)=>i);let eq=-1,toolMesh=null;const proj=[],debris=[],bubbles=[];
- let yaw=0,pitch=.35,dist=18,lastAct=now(),shiftLock=false,rdrag=false,lastX=0,lastY=0,chatOpen=true,chatT=now(),plOpen=innerWidth>700,unread=0,swing=0,recording=false,clickTarget=null,frames=0,fpsT=performance.now(),fps=60;
+ let yaw=0,pitch=.35,dist=18,distT=18,vis=null,camP=null,lastAct=now(),shiftLock=false,rdrag=false,lastX=0,lastY=0,chatOpen=true,chatT=now(),plOpen=innerWidth>700,unread=0,swing=0,recording=false,clickTarget=null,frames=0,fpsT=performance.now(),fps=60;
  GM={gid:g.id,ren,raf:0,iv:0};
  const ui={lines:$("#clines"),cin:$("#cin2")};
  function applyQuality(){const q=st.quality;ren.setPixelRatio(Math.min(devicePixelRatio,.5+q*.15));ren.shadowMap.enabled=q>=4;sun.castShadow=q>=4;scene.fog=new T.Fog(0xcfe8ff,60+q*40,150+q*80);cam.far=200+q*180;cam.updateProjectionMatrix();scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}
@@ -75,10 +79,10 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
   chat(S.me.name,text,false);bubble(me,text)}
  ui.cin.onkeydown=e=>{e.stopPropagation();if(e.key=="Enter"){if(ui.cin.value.trim())say(ui.cin.value.trim());ui.cin.value="";ui.cin.blur()}else if(e.key=="Escape"){ui.cin.value="";ui.cin.blur()}};
  $("#gchat").onmouseenter=()=>{$("#gchat").style.opacity=1;chatT=now()};
- $("#bchat").onclick=()=>{chatOpen=!chatOpen;$("#gchat").style.display=chatOpen?"":"none";unread=0;$("#cdot").style.display="none"};
- $("#bpl").onclick=()=>{plOpen=!plOpen;renderPL()};$("#bmenu").onclick=()=>openEsc();$("#bbp").onclick=()=>toggleBP();
+ $("#bchat").classList.add("on");$("#bchat").onclick=()=>{chatOpen=!chatOpen;$("#bchat").classList.toggle("on",chatOpen);$("#gchat").style.display=chatOpen?"":"none";unread=0;$("#cdot").style.display="none"};
+ $("#bpl").onclick=()=>{plOpen=!plOpen;renderPL()};$("#bname").onclick=()=>{plOpen=!plOpen;renderPL()};$("#bmenu").onclick=()=>openEsc();$("#bbp").onclick=()=>toggleBP();
  chat("","Welcome to "+g.name+"! Type /help for chat commands.",true);
- function renderPL(){const pl=$("#plist");if(!plOpen){pl.style.display="none";return}pl.style.display="block";const all=[{u:meUser(),stage:P.stage,coins:P.coins,me:1},...npcs.map(n=>({u:n.u,stage:n.stage,coins:n.coins,n}))];
+ function renderPL(){$("#bpl").classList.toggle("on",plOpen);const pl=$("#plist");if(!plOpen){pl.style.display="none";return}pl.style.display="block";const all=[{u:meUser(),stage:P.stage,coins:P.coins,me:1},...npcs.map(n=>({u:n.u,stage:n.stage,coins:n.coins,n}))];
   pl.innerHTML=`<div class="row between" style="padding:6px 8px;font-weight:700"><span>${esc(g.name.slice(0,22))}</span><span class="row" style="gap:0"><span style="width:50px;text-align:right">Stage</span><span style="width:50px;text-align:right">Coins</span></span></div>`+all.map((p,k)=>`<div class="r" data-k="${k}"><span style="flex:1">${p.u.bc?bcIcon(p.u.bc,14):""} ${isFriend(p.u.id)?"👥 ":""}${esc(p.u.name)}</span><span class="st">${p.stage}</span><span class="st">${p.coins}</span></div>`).join("");
   $$("#plist .r").forEach(r=>r.onclick=e=>{const p=all[+r.dataset.k];if(p.me)return;$$(".plpop").forEach(x=>x.remove());const d=document.createElement("div");d.className="plpop";d.style.cssText="background:#222;padding:6px;margin:0 8px 6px;border-radius:3px;display:flex;gap:4px;flex-wrap:wrap";const fr=isFriend(p.u.id);
    d.innerHTML=`<button>${fr?"Unfriend":"Add Friend"}</button><button>Follow</button><button>Block</button><button>Report</button>`;r.after(d);const b=$$("button",d);b.forEach(x=>{x.style.cssText="background:#444;color:#fff;border:0;font-size:12px"});
@@ -89,7 +93,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  function equip(ti){if(toolMesh){me.userData.ra.remove(toolMesh);toolMesh=null}if(eq==ti||ti==null){eq=-1;renderHot();return}eq=ti;const t=tools[ti];
   toolMesh=new T.Mesh(t.k=="sword"?new T.BoxGeometry(.3,4,.15):t.k=="grav"||t.k=="speed"?new T.TorusGeometry(.5,.12,8,16):new T.BoxGeometry(.5,.6,2.5),new T.MeshLambertMaterial({color:t.c}));toolMesh.position.set(0,me.userData.skinned?0:-2,t.k=="sword"?-1.5:-.8);if(t.k=="sword")toolMesh.rotation.x=Math.PI/2;me.userData.ra.add(toolMesh);renderHot()}
  renderHot();
- function toggleBP(){const o=$("#bpfull");if(o.classList.contains("on")){o.classList.remove("on");return}o.classList.add("on");
+ function toggleBP(){const o=$("#bpfull");if(o.classList.contains("on")){o.classList.remove("on");$("#bbp").classList.remove("on");return}o.classList.add("on");$("#bbp").classList.add("on");
   o.innerHTML=`<div class="gpanel"><div class="row between"><h3 style="margin:0">Backpack</h3><input id="bps" placeholder="Search" style="width:200px"><button id="bpx">Close</button></div><p class="small" style="opacity:.7">Drag a tool onto a hotbar slot below.</p><div class="row wrapflex" id="bpg" style="gap:6px"></div></div>`;
   const draw=()=>{const q=$("#bps").value.toLowerCase();$("#bpg").innerHTML=tools.map((t,i)=>t.n.toLowerCase().includes(q)?`<div class="slot" draggable="true" data-t="${i}" style="position:relative"><div style="width:22px;height:22px;background:${t.c};transform:rotate(45deg);margin-bottom:6px"></div>${esc(t.n.slice(0,10))}</div>`:"").join("");$$("#bpg .slot").forEach(s=>{s.ondragstart=e=>e.dataTransfer.setData("t",s.dataset.t);s.onclick=()=>equip(+s.dataset.t)})};
   $("#bps").oninput=draw;$("#bps").onkeydown=e=>e.stopPropagation();$("#bpx").onclick=toggleBP;draw()}
@@ -128,14 +132,14 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
   if(k=="F9"){e.preventDefault();dialog("Connection lost","Lost connection to the game server, please reconnect. (Error Code: 277)",[["Reconnect",()=>chat("","Reconnected.",true)],["Leave",leaveGame]]);return}
   if(k=="Shift"&&st.shiftlock){shiftLock=!shiftLock;$("#xhair").style.display=shiftLock?"block":"none";if(shiftLock)try{ren.domElement.requestPointerLock()}catch(e){}else try{document.exitPointerLock()}catch(e){}}
   if(/^[0-9]$/.test(k)){const i=(+k+9)%10;if(slots[i]!=null)equip(slots[i])}
-  if(k=="i"||k=="I")dist=Math.max(.5,dist-3);if(k=="o"||k=="O")dist=Math.min(60,dist+3);
+  if(k=="i"||k=="I")distT=Math.max(.5,distT-3);if(k=="o"||k=="O")distT=Math.min(60,distT+3);
   if(k==" ")e.preventDefault();keys[k.toLowerCase()]=true};
  GM.ku=e=>{keys[e.key.toLowerCase()]=false};document.addEventListener("keydown",GM.kd);document.addEventListener("keyup",GM.ku);
  const cv=ren.domElement;cv.oncontextmenu=e=>e.preventDefault();
  cv.onmousedown=e=>{lastAct=now();if(e.button==2){rdrag=true;lastX=e.clientX;lastY=e.clientY}else if(e.button==0){if(st.moveMode=="Click to Move"&&eq<0){const rc=new T.Raycaster();rc.setFromCamera({x:e.clientX/innerWidth*2-1,y:-e.clientY/innerHeight*2+1},cam);const h=rc.intersectObjects(scene.children.filter(o=>o.isMesh));if(h[0])clickTarget=h[0].point.clone()}else useTool()}};
  addEventListener("mouseup",()=>rdrag=false);
  cv.onmousemove=e=>{const s=st.sens/50*.006,inv=st.invert?-1:1;if(document.pointerLockElement==cv){yaw-=e.movementX*s;pitch=Math.max(-1.2,Math.min(1.4,pitch+e.movementY*s*inv))}else if(rdrag||shiftLock){yaw-=(e.clientX-lastX)*s;pitch=Math.max(-1.2,Math.min(1.4,pitch+(e.clientY-lastY)*s*inv));lastX=e.clientX;lastY=e.clientY}else{lastX=e.clientX;lastY=e.clientY}};
- cv.onwheel=e=>{dist=Math.max(.5,Math.min(60,dist*(e.deltaY>0?1.12:.89)))};
+ cv.onwheel=e=>{distT=Math.max(.5,Math.min(60,distT*(e.deltaY>0?1.12:.89)))};
  GM.rs=()=>{ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};addEventListener("resize",GM.rs);
  // touch
  let stickV={x:0,y:0};if("ontouchstart" in window){$("#stick").style.display=$("#jumpb").style.display="block";const sk=$("#stick");
@@ -174,9 +178,9 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
    const speed=16*(eq>=0&&tools[eq].k=="speed"?1.6:1);const cy=Math.cos(yaw),sy=Math.sin(yaw);let mx=ix*cy+iz*sy,mz=-ix*sy+iz*cy;
    if(clickTarget&&!ix&&!iz){const d=clickTarget.clone().sub(P.pos);d.y=0;if(d.length()<1)clickTarget=null;else{d.normalize();mx=d.x;mz=d.z}}else if(ix||iz)clickTarget=null;
    const ml=Math.hypot(mx,mz);if(ml>0){mx/=Math.max(1,ml);mz/=Math.max(1,ml)}
-   P.vel.x+=(mx*speed-P.vel.x)*Math.min(1,dt*12);P.vel.z+=(mz*speed-P.vel.z)*Math.min(1,dt*12);
+   const acc=1-Math.exp(-dt*(P.ground?(ml>0?9:11):3));P.vel.x+=(mx*speed-P.vel.x)*acc;P.vel.z+=(mz*speed-P.vel.z)*acc;
    if(keys[" "]&&P.ground){P.vel.y=eq>=0&&tools[eq].k=="grav"?70:50;sfx("jump")}
-   if(ml>0&&!shiftLock)P.yaw=Math.atan2(-mx,-mz);if(shiftLock||dist<1)P.yaw=yaw;
+   const tyaw=shiftLock||dist<1?yaw:ml>0?Math.atan2(-mx,-mz):P.yaw;let dy=tyaw-P.yaw;while(dy>Math.PI)dy-=6.2832;while(dy<-Math.PI)dy+=6.2832;P.yaw+=dy*(1-Math.exp(-dt*(shiftLock||dist<1?30:14)));
    if(ml>0&&P.emote)P.emote=null;
    const gnd=physics(P,dt,eq>=0&&tools[eq].k=="grav"?60:196);
    if(gnd&&gnd.kind=="kill")damage(100);
@@ -186,7 +190,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
    coins.forEach(c=>{if(c.visible&&c.position.distanceTo(P.pos.clone().add(new T.Vector3(0,1.5,0)))<2.5){c.visible=false;P.coins++;sfx("coin");setTimeout(()=>c.visible=true,30000)}});
    if(st.camMode=="Follow"&&ml>0&&!rdrag&&!shiftLock){let d=P.yaw-yaw;while(d>Math.PI)d-=6.283;while(d<-Math.PI)d+=6.283;yaw+=d*dt*1.5}
   }
-  me.position.copy(P.pos);me.rotation.y=P.yaw;
+  if(!vis||vis.distanceTo(P.pos)>8)vis=P.pos.clone();else{vis.x=P.pos.x;vis.z=P.pos.z;vis.y+=(P.pos.y-vis.y)*(P.pos.y>vis.y&&P.ground?1-Math.exp(-dt*18):1)}me.position.copy(vis);me.rotation.y=P.yaw;dist+=(distT-dist)*(1-Math.exp(-dt*12));
   const sw=now()-swing<300?(now()-swing)/300:0;if(P.emote&&now()-P.emoteT>4000)P.emote=null;
   me.userData.vy=P.vel.y;me.userData.speed=Math.hypot(P.vel.x,P.vel.z);animate(me,Math.hypot(P.vel.x,P.vel.z)>1,P.ground,t,P.emote,sw);
   // npcs
@@ -204,11 +208,11 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
   for(let i=debris.length-1;i>=0;i--)if(now()-debris[i].t>6000&&!P.dead){scene.remove(debris[i].m);debris.splice(i,1)}
   coins.forEach(c=>c.rotation.z+=dt*3);
   // camera
-  const head=P.pos.clone().add(new T.Vector3(0,4.5,0));if(shiftLock){head.add(new T.Vector3(Math.cos(yaw),0,-Math.sin(yaw)).multiplyScalar(1.7))}
+  const head0=vis.clone().add(new T.Vector3(0,4.5,0));if(!camP)camP=head0.clone();camP.lerp(head0,1-Math.exp(-dt*20));const head=camP.clone();if(shiftLock){head.add(new T.Vector3(Math.cos(yaw),0,-Math.sin(yaw)).multiplyScalar(1.7))}
   const fp=dist<1;if(fp&&!P.dead)me.visible=false;else if(!P.dead)me.visible=true;
   const off=new T.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch)).multiplyScalar(fp?.01:dist);cam.position.copy(head).add(off);cam.lookAt(head);if(fp)P.yaw=yaw;
   // hp
-  const hp=$("#hp");hp.style.display=P.hp<100?"block":"none";hp.firstChild.style.width=P.hp+"%";hp.firstChild.style.background=P.hp>60?"#2ecc40":P.hp>30?"#F5CD30":"#E2231A";
+  const hp=$("#hp");hp.style.display="block";hp.firstChild.style.width=P.hp+"%";hp.firstChild.style.background=P.hp>60?"#2ecc40":P.hp>30?"#F5CD30":"#E2231A";
   if(chatOpen&&now()-chatT>30000)$("#gchat").style.opacity=.15;
   // bubbles
   for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];if(now()-b.t>6000||!b.obj.visible){b.el.remove();bubbles.splice(i,1);continue}const v=b.obj.position.clone().add(new T.Vector3(0,7,0)).project(cam);b.el.style.display=v.z<1?"block":"none";b.el.style.left=(v.x+1)/2*innerWidth+"px";b.el.style.top=(1-v.y)/2*innerHeight+"px";b.el.style.opacity=1-(now()-b.t)/6000}
