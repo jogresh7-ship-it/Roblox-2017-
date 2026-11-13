@@ -42,3 +42,11 @@ function assetCSS(){let st=document.getElementById("astcss");if(!st){st=document
  if(AOK.less)c+=`.sldr .less:before,.sldr .more:before,.sldr .more:after{display:none}`;if(AOK.less)c+=`.sldr .less{background:${u("less")} center/18px 18px no-repeat!important}`;if(AOK.more)c+=`.sldr .more{background:${u("more")} center/18px 18px no-repeat!important}`;
  if(AOK.rowBg)c+=`.escbody .prow:before{background:none!important;border:10px solid transparent;border-image:${u("rowBg")} 9 fill / 10px stretch;border-radius:0!important}`;
  st.textContent=c}
+
+/* Optional UI font from the local asset pack (assets/fonts/font.js sets window.BLOX_FONT to a data: URL).
+   Loaded through a script because browsers block font files opened straight from disk. */
+(function(){if(!window.BLOX_FONT)return;const st=document.createElement("style");st.id="bloxfont";
+ st.textContent=`@font-face{font-family:"BloxUI";src:url(${window.BLOX_FONT}) format("truetype");font-display:swap}
+ body *:not(.logo):not(h1):not(h2):not(.gfont):not(.logo *):not(h1 *):not(h2 *){font-family:"BloxUI","Source Sans Pro",Helvetica,Arial,sans-serif!important}
+ body{font-family:"BloxUI","Source Sans Pro",Helvetica,Arial,sans-serif}
+ .ebtn{white-space:nowrap;font-size:19px!important}.esctabs div{font-size:21px!important}.srow2 .lab{font-size:21px!important}`;document.head.appendChild(st)})();
