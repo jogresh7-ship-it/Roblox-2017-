@@ -67,7 +67,7 @@ function onFaceAsset(){for(const k in avCache)delete avCache[k];for(const k in t
 function objModels(){return window.BLOX_MODELS||[]}
 function bodyModels(){return [{id:"noob",name:"Noob",rig:"R6",note:"Rigged + animated",_ready:!!NOOB}].concat(window.BLOX_CLASSIC?[{id:"classic",name:"Classic",rig:"R6",note:"2017 blocky body · head shapes",_ready:true}]:[],objModels().map(m=>Object.assign(m,{note:m.note||"Part-animated"})))}
 function modelById(id){return bodyModels().find(m=>m.id==id)||bodyModels()[0]}
-function loadObjModels(){objModels().forEach(m=>{if(m._img)return;const im=new Image();im.onload=()=>{m._ready=true;onFaceAsset()};im.src=encodeURI(m.tex);m._img=im})}
+function loadObjModels(){objModels().forEach(m=>{if(m._img)return;const im=new Image();im.onload=()=>{m._ready=true;onFaceAsset()};im.src=texURL(m.tex);m._img=im})}
 function objParts(m){if(m._parts)return m._parts;const T=THREE,V=[],VT=[],parts={head:[],torso:[],la:[],ra:[],ll:[],rl:[]};
  const sy=m.shoulderY||3.3,hy=m.hipY||1.9;
  for(const l of m.obj.split("\n")){const p=l.trim().split(/\s+/);if(p[0]=="v")V.push(p.slice(1,4).map(Number));else if(p[0]=="vt")VT.push(p.slice(1,3).map(Number));else if(p[0]=="f"){const ix=p.slice(1).map(t=>t.split("/").map(n=>parseInt(n)-1));
@@ -93,7 +93,7 @@ setTimeout(loadObjModels,0);
 
 /* ================= OBJ ACCESSORIES (hats, hair, back, carpet gear) ================= */
 const accGeo={},accTex={};
-function accReady(a){if(!accTex[a.tex]){const im=new Image();const t=new THREE.Texture(im);accTex[a.tex]={im,ok:false,t};im.onload=()=>{accTex[a.tex].ok=true;t.needsUpdate=true;onFaceAsset()};im.src=encodeURI(a.tex)}return accTex[a.tex].ok}
+function accReady(a){if(!accTex[a.tex]){const im=new Image();const t=new THREE.Texture(im);accTex[a.tex]={im,ok:false,t};im.onload=()=>{accTex[a.tex].ok=true;t.needsUpdate=true;onFaceAsset()};im.src=texURL(a.tex)}return accTex[a.tex].ok}
 function accGeometry(key){if(accGeo[key])return accGeo[key];const src=(window.BLOX_ACCESSORY_OBJS||{})[key];if(!src)return null;const V=[],VT=[],pos=[],uv=[];
  for(const l of src.split("\n")){const p=l.trim().split(/\s+/);if(p[0]=="v")V.push(p.slice(1,4).map(Number));else if(p[0]=="vt")VT.push(p.slice(1,3).map(Number));else if(p[0]=="f"){const ix=p.slice(1).map(t=>t.split("/").map(n=>parseInt(n)-1));for(let k=1;k<ix.length-1;k++)for(const q of[ix[0],ix[k],ix[k+1]]){const v=V[q[0]];pos.push(v[0],v[1],v[2]);const t=VT[q[1]]||[0,0];uv.push(t[0],t[1])}}}
  const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return accGeo[key]=g}
@@ -113,3 +113,10 @@ function makeClassicChar(colors,items){const T=THREE,C=window.BLOX_CLASSIC,it=eq
  const fc=it.find(x=>x.sub=="Faces"),fk=fc&&fc.faceImg?fc.faceImg:"classicFace";const bb=hg.boundingBox;
  const face=new T.Mesh(new T.PlaneGeometry(1.2,1.2),new T.MeshLambertMaterial({map:faceTexture(fk),transparent:true,depthWrite:false}));face.rotation.y=Math.PI;face.position.set(0,(bb.min.y+bb.max.y)/2,bb.min.z-.02);head.add(face);
  root.userData=ud;addAccessories(root,items,window._accOpts||{});return root}
+
+/* Place a held gear model in the hand: map the model's forward/up axes onto the holder's. */
+function orientTool(mesh,a,skinned){const T=THREE,v=x=>new T.Vector3(...x).normalize();
+ const Fm=v(a.F||[0,0,-1]),Um=v(a.U||[0,1,0]),Sm=new T.Vector3().crossVectors(Um,Fm);
+ const Fh=skinned?v([0,0,-1]):v([0,-1,0]),Uh=skinned?v([0,1,0]):v([0,0,-1]),Sh=new T.Vector3().crossVectors(Uh,Fh);
+ const Mm=new T.Matrix4().makeBasis(Sm,Um,Fm),Mh=new T.Matrix4().makeBasis(Sh,Uh,Fh);const R=Mh.multiply(Mm.transpose());
+ mesh.quaternion.setFromRotationMatrix(R);const grip=new T.Vector3(...(a.grip||[0,0,0])).applyMatrix4(R);mesh.position.set(0,skinned?0:-2,0).sub(grip);return mesh}

@@ -51,7 +51,7 @@ const itemById=id=>I.find(x=>x.id==id);
 /* no fake players, no bots, no seeded games: one Baseplate */
 U.length=1;I.forEach(i=>i.creator=1);
 /* faces from the local asset pack */
-[["Sad", 0], ["Sad Zombie", 75], ["Sad Clown", 50], ["Sadfaic", 100], ["Teal Rock Star Smile", 150]].forEach(([n,p],i)=>I.push({id:900+i,name:n,top:"Body Parts",sub:"Faces",creator:1,price:p,limited:0,remaining:0,orig:p,offsale:false,fav:1000+i*37,sales:500+i*91,color:"#F5CD30",color2:"#000",updated:NOW0,seed:9000+i,faceImg:"face"+i}));
+(window.BLOX_FACES?window.BLOX_FACES.map(f=>[f.name,f.price]):[["Sad", 0], ["Sad Zombie", 75], ["Sad Clown", 50], ["Sadfaic", 100], ["Teal Rock Star Smile", 150]]).forEach(([n,p],i)=>I.push({id:900+i,name:n,top:"Body Parts",sub:"Faces",creator:1,price:p,limited:0,remaining:0,orig:p,offsale:false,fav:1000+i*37,sales:500+i*91,color:"#F5CD30",color2:"#000",updated:NOW0,seed:9000+i,faceImg:"face"+i}));
 (window.BLOX_ACCESSORIES||[]).forEach((a,i)=>I.push({id:950+i,name:a.name,top:a.sub=="Gear"?"Gear":"Accessories",sub:a.sub=="Gear"?"Transport":a.sub,creator:1,price:a.price,limited:a.price>=20000?1:0,remaining:0,orig:a.price,offsale:false,fav:5000+i*311,sales:900+i*77,color:"#888",color2:"#000",updated:NOW0,seed:9500+i,acc:a}));
 Object.keys((window.BLOX_CLASSIC||{}).heads||{}).filter(k=>k!="head").forEach((k,i)=>I.push({id:980+i,name:"Head Shape "+k.slice(4).toUpperCase(),top:"Body Parts",sub:"Heads",creator:1,price:[0,25,50,75,100][i%5],limited:0,remaining:0,orig:0,offsale:false,fav:300+i*41,sales:200+i*13,color:"#F5CD30",color2:"#000",updated:NOW0,seed:9800+i,headKey:k}));
 I.splice(0,I.length,...I.filter(i=>i.faceImg||i.acc||i.headKey)); /* only the faces exist for now */
