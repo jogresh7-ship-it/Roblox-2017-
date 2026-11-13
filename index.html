@@ -260,19 +260,10 @@ function uAv(u,size,head){if(!u||u.id===0)return avatarSVG({size,head,bg:head?"#
  return avatarSVG({colors:u.colors,items,size,head,bg:head?"#dfe3e6":undefined})}
 function headshot(u,size=48,pres=true){const p=u.id===0?1:u.pres;return `<div style="position:relative;width:${size}px;height:${size}px;flex:0 0 ${size}px"><div style="border-radius:50%;overflow:hidden;width:${size}px;height:${size}px;background:#dfe3e6">${uAv(u,size,true)}</div>${pres&&presColor(p)?`<span class="pres" style="background:${presColor(p)}"></span>`:""}</div>`}
 const thumbCache={};
-function gameThumb(g,w=150,h=150,v=0){const k=g.seed+"_"+w+"_"+h+"_"+v;if(thumbCache[k])return thumbCache[k];
- const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");const r=rng(g.seed+v*31);
- const sky=x.createLinearGradient(0,0,0,h);const hue=ri(180,230,r);sky.addColorStop(0,`hsl(${hue},70%,55%)`);sky.addColorStop(1,`hsl(${hue},70%,85%)`);x.fillStyle=sky;x.fillRect(0,0,w,h);
- x.fillStyle="#fff8";for(let i=0;i<3;i++){const cx=r()*w,cy=r()*h*.3;x.fillRect(cx,cy,w*.2,h*.05);x.fillRect(cx+w*.04,cy-h*.03,w*.1,h*.04)}
- const gy=h*(.6+r()*.15);x.fillStyle=pick(["#4B974B","#3A7D15","#A1A5A2","#D7C59A","#635F62"],r);x.fillRect(0,gy,w,h-gy);
- x.strokeStyle="#0001";for(let i=0;i<w;i+=w/15){x.beginPath();x.moveTo(i,gy);x.lineTo(i,h);x.stroke()}
- const n=ri(4,9,r);for(let i=0;i<n;i++){const bw=w*(.08+r()*.2),bh=h*(.05+r()*.35),bx=r()*(w-bw),by=gy-bh+h*.02*i;x.fillStyle=pick(BRICK.slice(5,30),r);x.fillRect(bx,by,bw,bh);x.fillStyle="#0002";x.fillRect(bx+bw*.75,by,bw*.25,bh);x.fillStyle="#fff3";x.fillRect(bx,by,bw,bh*.12)}
- // little avatar
- const ax=w*(.3+r()*.4),ay=gy-h*.18,s=h/150;x.fillStyle=SKIN;x.fillRect(ax+3*s,ay,8*s,8*s);x.fillStyle=pick(BRICK,r);x.fillRect(ax,ay+8*s,14*s,12*s);x.fillStyle="#333";x.fillRect(ax+1*s,ay+20*s,12*s,10*s);
- return thumbCache[k]=c.toDataURL()}
+function gameThumb(g,w=150,h=150,v=0){const k="g"+w+"_"+h;if(thumbCache[k])return thumbCache[k];return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`)}
 function itemThumb(it,size=110){const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
  if(it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const r=renderAvatar({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads",bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
- const inner=it.top=="Gear"?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><g transform="rotate(${it.seed%60-30} 50 50)"><rect x="45" y="12" width="10" height="56" fill="${it.color}" stroke="#0004"/><rect x="34" y="66" width="32" height="7" fill="#555"/><rect x="46" y="72" width="8" height="16" fill="#624732"/></g></svg>`:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><circle cx="50" cy="30" r="10" fill="${it.color}"/><path d="M50 40 L35 70 M50 40 L65 60 M50 40 L50 75 L40 95 M50 75 L62 92" stroke="${it.color}" stroke-width="6" fill="none"/></svg>`;
+ const inner=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`;
  return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(inner)}
 function groupEmblem(g,size=64){return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" style="display:block;border-radius:3px"><rect width="64" height="64" fill="${g.color}"/><path d="M32 8 L54 18 V34 Q54 50 32 58 Q10 50 10 34 V18Z" fill="#fff3" stroke="#fff" stroke-width="2"/><text x="32" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Arial">${esc(g.name[0])}</text></svg>`}
 const IC={
@@ -424,14 +415,12 @@ function logout(){save();closeModal();route();renderDock()}
 
 function pageHome(){const fr=S.friends.map(userById);const rec=S.recent.map(gameById).filter(Boolean);
  const fa=G.filter(g=>fr.some(u=>u.pres==2&&(u.id%40)+1==g.id));
- after(()=>{$("#postbox").onsubmit=e=>{e.preventDefault();const v=$("#postin").value.trim();if(!v)return;S.feed.unshift({by:0,text:v,t:now()});S.me.status=v;save();route()}});
+ 0&&after(()=>{$("#postbox").onsubmit=e=>{e.preventDefault();const v=$("#postin").value.trim();if(!v)return;S.feed.unshift({by:0,text:v,t:now()});S.me.status=v;save();route()}});
  const feed=[...S.feed.map(f=>({...f,u:meUser()}))].filter(Boolean).sort((a,b)=>b.t-a.t);
  return `<div class="wrap"><div class="row">${avatarSVG({size:150,head:true,bg:"#dfe3e6"})}<h1>Hello, ${esc(S.me.name)}! ${bcIcon(S.me.bc,28)}</h1></div>
  <div style="display:flex;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:300px">
  ${[["Continue",rec],["Favorites",S.favGames.map(gameById).filter(Boolean)],["Recommended",G.slice(10,30)]].map(([t,l])=>`<div class="sechead"><h2>${t}</h2><a href="#/games?sort=${encodeURIComponent(t=="Favorites"?"My Favorite":t=="Continue"?"My Recent":"Popular")}">See All</a></div>${l.length?carousel(l.map(gcard).join("")):"<p class='muted'>Nothing here yet.</p>"}`).join("")}
- <div class="sechead"><h2>My Feed</h2></div><form class="card row" id="postbox"><input id="postin" placeholder="What are you up to?" style="flex:1" maxlength="200"><button class="btn-blue">Post</button></form>
- ${feed.map(f=>`<div class="card row" style="align-items:flex-start">${headshot(f.u,48,false)}<div><b>${esc(f.u.name)}</b>${f.grp?` <span class="small muted">in <a href="#/groups/${f.grp.id}">${esc(f.grp.name)}</a></span>`:""}<div>${esc(f.text)}</div><div class="small muted">${ago(f.t)}</div></div></div>`).join("")}
- </div></div></div>`}
+</div></div></div>`}
 const BLOG=[{t:"Introducing the New Avatar Editor",d:"Oct 10, 2017",b:"Customize your look like never before with body scaling, outfits and more."},{t:"BLOX Developers Conference Recap",d:"Sep 28, 2017",b:"Thanks to all the creators who joined us this year! Here's what we talked about."},{t:"Halloween Event Coming Soon",d:"Sep 21, 2017",b:"Spooky hats, haunted games and a scavenger hunt are on the way."},{t:"Safety Tips for the New School Year",d:"Aug 30, 2017",b:"Keep your account secure with 2-Step Verification and a strong password."}];
 
 const SORTS=["Popular","Top Earning","Top Rated","Featured","Top Favorite","Top Paid","Builders Club","My Recent","My Favorite"];
@@ -797,11 +786,11 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  <div class="gover" id="esc"></div><div class="gover" id="bpfull"></div><div class="gover" id="dlg"></div><div id="rec" style="display:none;position:absolute;top:44px;right:310px;color:#f44;font-weight:700;cursor:pointer">● Recording…</div>`;
  const st=S.settings;
  const ren=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});ren.setSize(innerWidth,innerHeight);ren.shadowMap.enabled=true;root.prepend(ren.domElement);
- const scene=new T.Scene();const sc=document.createElement("canvas");sc.width=2;sc.height=256;const sx=sc.getContext("2d");const gr=sx.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#3b8fe0");gr.addColorStop(.5,"#9cd0ff");gr.addColorStop(1,"#e9f5ff");sx.fillStyle=gr;sx.fillRect(0,0,2,256);scene.background=new T.CanvasTexture(sc);
+ const scene=new T.Scene();const sc=document.createElement("canvas");sc.width=2;sc.height=256;const sx=sc.getContext("2d");const gr=sx.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#3b8fe0");gr.addColorStop(.5,"#9cd0ff");gr.addColorStop(1,"#e9f5ff");sx.fillStyle=gr;sx.fillRect(0,0,2,256);scene.background=new T.Color(0x9cd0ff);
  const cam=new T.PerspectiveCamera(70,innerWidth/innerHeight,.1,2000);
  scene.add(new T.HemisphereLight(0xffffff,0x667766,.65));const sun=new T.DirectionalLight(0xffffff,.8);sun.position.set(80,150,60);sun.castShadow=true;sun.shadow.camera.left=sun.shadow.camera.bottom=-120;sun.shadow.camera.right=sun.shadow.camera.top=120;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
  const sunball=new T.Mesh(new T.SphereGeometry(30,16,16),new T.MeshBasicMaterial({color:0xfff6c0}));sunball.position.set(400,600,300);scene.add(sunball);
- const tx=studTex();tx.repeat.set(256,256);const base=new T.Mesh(new T.BoxGeometry(512,1,512),new T.MeshLambertMaterial({map:tx,color:0x8a9a8a}));base.position.y=-.5;base.receiveShadow=true;scene.add(base);
+ const base=new T.Mesh(new T.BoxGeometry(512,1,512),new T.MeshLambertMaterial({color:0x8a8d8b}));base.position.y=-.5;base.receiveShadow=true;scene.add(base);
  const solids=[{min:new T.Vector3(-256,-1,-256),max:new T.Vector3(256,0,256)}];
  const addBox=(x,y,z,w,h,d,c,kind)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshLambertMaterial({color:c}));m.position.set(x,y+h/2,z);m.castShadow=m.receiveShadow=true;scene.add(m);const s={min:new T.Vector3(x-w/2,y,z-d/2),max:new T.Vector3(x+w/2,y+h,z+d/2),kind,mesh:m};solids.push(s);return s};
  addBox(0,0,0,12,1,12,0x5a5a5a,"spawn");const sl=new T.Mesh(new T.PlaneGeometry(6,6),new T.MeshBasicMaterial({color:0x2154B9}));sl.rotation.x=-Math.PI/2;sl.position.y=1.02;scene.add(sl);
@@ -988,7 +977,7 @@ function pageStudio(parts){const g=gameById(+parts[1]);if(!g)return page404();if
  <div style="width:240px;display:flex;flex-direction:column"><div class="spane" style="flex:1"><b style="display:block;padding:4px;background:#eee">Explorer</b><div class="etree" id="exp"></div></div><div class="spane" style="flex:1"><b style="display:block;padding:4px;background:#eee">Properties</b><div id="props" style="padding:4px"></div></div></div></div>`;
  const vp=$("#vp");const ren=new T.WebGLRenderer({antialias:true});vp.appendChild(ren.domElement);const scene=new T.Scene();scene.background=new T.Color(0xa9d4ff);const cam=new T.PerspectiveCamera(60,1,.1,2000);
  scene.add(new T.HemisphereLight(0xffffff,0x666666,.8));const dl=new T.DirectionalLight(0xffffff,.6);dl.position.set(50,100,30);scene.add(dl);
- const tx=studTex();tx.repeat.set(128,128);const base=new T.Mesh(new T.BoxGeometry(256,1,256),new T.MeshLambertMaterial({map:tx}));base.position.y=-.5;scene.add(base);
+ const base=new T.Mesh(new T.BoxGeometry(256,1,256),new T.MeshLambertMaterial({color:0x8a8d8b}));base.position.y=-.5;scene.add(base);
  let tool="Select",sel=null,drag=null,cy=.6,cp=1,cd=60;const meshes=new Map();
  const log=t=>{$("#out").innerHTML+=esc(t)+"<br>";$("#out").parentNode.scrollTop=1e6};
  function mk(p){const m=new T.Mesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:p.color}));upd(m,p);scene.add(m);meshes.set(p,m)}

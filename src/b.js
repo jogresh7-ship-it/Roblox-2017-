@@ -85,19 +85,10 @@ function uAv(u,size,head){if(!u||u.id===0)return avatarSVG({size,head,bg:head?"#
  return avatarSVG({colors:u.colors,items,size,head,bg:head?"#dfe3e6":undefined})}
 function headshot(u,size=48,pres=true){const p=u.id===0?1:u.pres;return `<div style="position:relative;width:${size}px;height:${size}px;flex:0 0 ${size}px"><div style="border-radius:50%;overflow:hidden;width:${size}px;height:${size}px;background:#dfe3e6">${uAv(u,size,true)}</div>${pres&&presColor(p)?`<span class="pres" style="background:${presColor(p)}"></span>`:""}</div>`}
 const thumbCache={};
-function gameThumb(g,w=150,h=150,v=0){const k=g.seed+"_"+w+"_"+h+"_"+v;if(thumbCache[k])return thumbCache[k];
- const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");const r=rng(g.seed+v*31);
- const sky=x.createLinearGradient(0,0,0,h);const hue=ri(180,230,r);sky.addColorStop(0,`hsl(${hue},70%,55%)`);sky.addColorStop(1,`hsl(${hue},70%,85%)`);x.fillStyle=sky;x.fillRect(0,0,w,h);
- x.fillStyle="#fff8";for(let i=0;i<3;i++){const cx=r()*w,cy=r()*h*.3;x.fillRect(cx,cy,w*.2,h*.05);x.fillRect(cx+w*.04,cy-h*.03,w*.1,h*.04)}
- const gy=h*(.6+r()*.15);x.fillStyle=pick(["#4B974B","#3A7D15","#A1A5A2","#D7C59A","#635F62"],r);x.fillRect(0,gy,w,h-gy);
- x.strokeStyle="#0001";for(let i=0;i<w;i+=w/15){x.beginPath();x.moveTo(i,gy);x.lineTo(i,h);x.stroke()}
- const n=ri(4,9,r);for(let i=0;i<n;i++){const bw=w*(.08+r()*.2),bh=h*(.05+r()*.35),bx=r()*(w-bw),by=gy-bh+h*.02*i;x.fillStyle=pick(BRICK.slice(5,30),r);x.fillRect(bx,by,bw,bh);x.fillStyle="#0002";x.fillRect(bx+bw*.75,by,bw*.25,bh);x.fillStyle="#fff3";x.fillRect(bx,by,bw,bh*.12)}
- // little avatar
- const ax=w*(.3+r()*.4),ay=gy-h*.18,s=h/150;x.fillStyle=SKIN;x.fillRect(ax+3*s,ay,8*s,8*s);x.fillStyle=pick(BRICK,r);x.fillRect(ax,ay+8*s,14*s,12*s);x.fillStyle="#333";x.fillRect(ax+1*s,ay+20*s,12*s,10*s);
- return thumbCache[k]=c.toDataURL()}
+function gameThumb(g,w=150,h=150,v=0){const k="g"+w+"_"+h;if(thumbCache[k])return thumbCache[k];return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`)}
 function itemThumb(it,size=110){const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
  if(it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const r=renderAvatar({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads",bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
- const inner=it.top=="Gear"?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><g transform="rotate(${it.seed%60-30} 50 50)"><rect x="45" y="12" width="10" height="56" fill="${it.color}" stroke="#0004"/><rect x="34" y="66" width="32" height="7" fill="#555"/><rect x="46" y="72" width="8" height="16" fill="#624732"/></g></svg>`:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" style="background:#eef0f2"><circle cx="50" cy="30" r="10" fill="${it.color}"/><path d="M50 40 L35 70 M50 40 L65 60 M50 40 L50 75 L40 95 M50 75 L62 92" stroke="${it.color}" stroke-width="6" fill="none"/></svg>`;
+ const inner=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`;
  return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(inner)}
 function groupEmblem(g,size=64){return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" style="display:block;border-radius:3px"><rect width="64" height="64" fill="${g.color}"/><path d="M32 8 L54 18 V34 Q54 50 32 58 Q10 50 10 34 V18Z" fill="#fff3" stroke="#fff" stroke-width="2"/><text x="32" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Arial">${esc(g.name[0])}</text></svg>`}
 const IC={

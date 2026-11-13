@@ -25,14 +25,12 @@ function logout(){save();closeModal();route();renderDock()}
 
 function pageHome(){const fr=S.friends.map(userById);const rec=S.recent.map(gameById).filter(Boolean);
  const fa=G.filter(g=>fr.some(u=>u.pres==2&&(u.id%40)+1==g.id));
- after(()=>{$("#postbox").onsubmit=e=>{e.preventDefault();const v=$("#postin").value.trim();if(!v)return;S.feed.unshift({by:0,text:v,t:now()});S.me.status=v;save();route()}});
+ 0&&after(()=>{$("#postbox").onsubmit=e=>{e.preventDefault();const v=$("#postin").value.trim();if(!v)return;S.feed.unshift({by:0,text:v,t:now()});S.me.status=v;save();route()}});
  const feed=[...S.feed.map(f=>({...f,u:meUser()}))].filter(Boolean).sort((a,b)=>b.t-a.t);
  return `<div class="wrap"><div class="row">${avatarSVG({size:150,head:true,bg:"#dfe3e6"})}<h1>Hello, ${esc(S.me.name)}! ${bcIcon(S.me.bc,28)}</h1></div>
  <div style="display:flex;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:300px">
  ${[["Continue",rec],["Favorites",S.favGames.map(gameById).filter(Boolean)],["Recommended",G.slice(10,30)]].map(([t,l])=>`<div class="sechead"><h2>${t}</h2><a href="#/games?sort=${encodeURIComponent(t=="Favorites"?"My Favorite":t=="Continue"?"My Recent":"Popular")}">See All</a></div>${l.length?carousel(l.map(gcard).join("")):"<p class='muted'>Nothing here yet.</p>"}`).join("")}
- <div class="sechead"><h2>My Feed</h2></div><form class="card row" id="postbox"><input id="postin" placeholder="What are you up to?" style="flex:1" maxlength="200"><button class="btn-blue">Post</button></form>
- ${feed.map(f=>`<div class="card row" style="align-items:flex-start">${headshot(f.u,48,false)}<div><b>${esc(f.u.name)}</b>${f.grp?` <span class="small muted">in <a href="#/groups/${f.grp.id}">${esc(f.grp.name)}</a></span>`:""}<div>${esc(f.text)}</div><div class="small muted">${ago(f.t)}</div></div></div>`).join("")}
- </div></div></div>`}
+</div></div></div>`}
 const BLOG=[{t:"Introducing the New Avatar Editor",d:"Oct 10, 2017",b:"Customize your look like never before with body scaling, outfits and more."},{t:"BLOX Developers Conference Recap",d:"Sep 28, 2017",b:"Thanks to all the creators who joined us this year! Here's what we talked about."},{t:"Halloween Event Coming Soon",d:"Sep 21, 2017",b:"Spooky hats, haunted games and a scavenger hunt are on the way."},{t:"Safety Tips for the New School Year",d:"Aug 30, 2017",b:"Keep your account secure with 2-Step Verification and a strong password."}];
 
 const SORTS=["Popular","Top Earning","Top Rated","Featured","Top Favorite","Top Paid","Builders Club","My Recent","My Favorite"];

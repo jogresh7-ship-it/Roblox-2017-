@@ -40,11 +40,11 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  <div class="gover" id="esc"></div><div class="gover" id="bpfull"></div><div class="gover" id="dlg"></div><div id="rec" style="display:none;position:absolute;top:44px;right:310px;color:#f44;font-weight:700;cursor:pointer">● Recording…</div>`;
  const st=S.settings;
  const ren=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});ren.setSize(innerWidth,innerHeight);ren.shadowMap.enabled=true;root.prepend(ren.domElement);
- const scene=new T.Scene();const sc=document.createElement("canvas");sc.width=2;sc.height=256;const sx=sc.getContext("2d");const gr=sx.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#3b8fe0");gr.addColorStop(.5,"#9cd0ff");gr.addColorStop(1,"#e9f5ff");sx.fillStyle=gr;sx.fillRect(0,0,2,256);scene.background=new T.CanvasTexture(sc);
+ const scene=new T.Scene();const sc=document.createElement("canvas");sc.width=2;sc.height=256;const sx=sc.getContext("2d");const gr=sx.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#3b8fe0");gr.addColorStop(.5,"#9cd0ff");gr.addColorStop(1,"#e9f5ff");sx.fillStyle=gr;sx.fillRect(0,0,2,256);scene.background=new T.Color(0x9cd0ff);
  const cam=new T.PerspectiveCamera(70,innerWidth/innerHeight,.1,2000);
  scene.add(new T.HemisphereLight(0xffffff,0x667766,.65));const sun=new T.DirectionalLight(0xffffff,.8);sun.position.set(80,150,60);sun.castShadow=true;sun.shadow.camera.left=sun.shadow.camera.bottom=-120;sun.shadow.camera.right=sun.shadow.camera.top=120;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
  const sunball=new T.Mesh(new T.SphereGeometry(30,16,16),new T.MeshBasicMaterial({color:0xfff6c0}));sunball.position.set(400,600,300);scene.add(sunball);
- const tx=studTex();tx.repeat.set(256,256);const base=new T.Mesh(new T.BoxGeometry(512,1,512),new T.MeshLambertMaterial({map:tx,color:0x8a9a8a}));base.position.y=-.5;base.receiveShadow=true;scene.add(base);
+ const base=new T.Mesh(new T.BoxGeometry(512,1,512),new T.MeshLambertMaterial({color:0x8a8d8b}));base.position.y=-.5;base.receiveShadow=true;scene.add(base);
  const solids=[{min:new T.Vector3(-256,-1,-256),max:new T.Vector3(256,0,256)}];
  const addBox=(x,y,z,w,h,d,c,kind)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshLambertMaterial({color:c}));m.position.set(x,y+h/2,z);m.castShadow=m.receiveShadow=true;scene.add(m);const s={min:new T.Vector3(x-w/2,y,z-d/2),max:new T.Vector3(x+w/2,y+h,z+d/2),kind,mesh:m};solids.push(s);return s};
  addBox(0,0,0,12,1,12,0x5a5a5a,"spawn");const sl=new T.Mesh(new T.PlaneGeometry(6,6),new T.MeshBasicMaterial({color:0x2154B9}));sl.rotation.x=-Math.PI/2;sl.position.y=1.02;scene.add(sl);
@@ -231,7 +231,7 @@ function pageStudio(parts){const g=gameById(+parts[1]);if(!g)return page404();if
  <div style="width:240px;display:flex;flex-direction:column"><div class="spane" style="flex:1"><b style="display:block;padding:4px;background:#eee">Explorer</b><div class="etree" id="exp"></div></div><div class="spane" style="flex:1"><b style="display:block;padding:4px;background:#eee">Properties</b><div id="props" style="padding:4px"></div></div></div></div>`;
  const vp=$("#vp");const ren=new T.WebGLRenderer({antialias:true});vp.appendChild(ren.domElement);const scene=new T.Scene();scene.background=new T.Color(0xa9d4ff);const cam=new T.PerspectiveCamera(60,1,.1,2000);
  scene.add(new T.HemisphereLight(0xffffff,0x666666,.8));const dl=new T.DirectionalLight(0xffffff,.6);dl.position.set(50,100,30);scene.add(dl);
- const tx=studTex();tx.repeat.set(128,128);const base=new T.Mesh(new T.BoxGeometry(256,1,256),new T.MeshLambertMaterial({map:tx}));base.position.y=-.5;scene.add(base);
+ const base=new T.Mesh(new T.BoxGeometry(256,1,256),new T.MeshLambertMaterial({color:0x8a8d8b}));base.position.y=-.5;scene.add(base);
  let tool="Select",sel=null,drag=null,cy=.6,cp=1,cd=60;const meshes=new Map();
  const log=t=>{$("#out").innerHTML+=esc(t)+"<br>";$("#out").parentNode.scrollTop=1e6};
  function mk(p){const m=new T.Mesh(new T.BoxGeometry(1,1,1),new T.MeshLambertMaterial({color:p.color}));upd(m,p);scene.add(m);meshes.set(p,m)}
