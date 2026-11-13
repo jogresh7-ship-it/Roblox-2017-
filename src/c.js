@@ -90,12 +90,12 @@ false&&setInterval(()=>{if(!S.loggedIn||$("#game").classList.contains("on"))retu
 /* ================= ROUTER ================= */
 let curTimer=null;
 function parseHash(){const h=location.hash.slice(1)||"/home";const [p,q]=h.split("?");const qs={};(q||"").split("&").forEach(kv=>{if(kv){const [k,v]=kv.split("=");qs[k]=decodeURIComponent(v||"")}});return{parts:p.split("/").filter(Boolean),qs}}
-function route(){clearInterval(curTimer);window.onscroll=null;const {parts,qs}=parseHash();const m=$("#main");
+function route(){clearInterval(curTimer);window.onscroll=null;if(typeof stopAv3d=="function")stopAv3d();const {parts,qs}=parseHash();const m=$("#main");
  document.body.classList.toggle("dark",S.settings.theme=="dark");
  S.loggedIn=true;if(false){$("#hdr").style.display=$("#side").style.display="none";m.style.margin="0";m.style.padding="0";m.innerHTML=pageLanding();bindLanding();return}
  $("#hdr").style.display="";m.style.margin="";m.style.marginLeft="0";m.style.padding="";
  if(parts[0]!="play")stopGame();if(parts[0]!="studio")closeStudio();
- const P={avatar:pageAvatar2,users:pageProfile,home:pageHome,games:pageGames,catalog:pageCatalog,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,play:pagePlay,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,studio:pageStudio};
+ const P={avatar:pageAvatar2,users:pageProfile,home:pageHome,games:pageGames,catalog:pageCatalog,develop:pageDevelop,settings:pageSettings,play:pagePlay,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,studio:pageStudio};
  const f=P[parts[0]];let html;try{html=f?f(parts,qs):page404()}catch(e){console.error(e);html=page404()}
  if(html!=null){m.innerHTML=html+footer();scrollTo(0,0)}
  renderSide();const af=window._after;window._after=null;af&&af()}

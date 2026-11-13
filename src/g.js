@@ -27,7 +27,7 @@ function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s
  m.userData.ra=new T.Group();m.add(m.userData.ra); // tool holder that follows the right hand
  const hatHolder=new T.Group();m.add(hatHolder);m.userData.hat=hatHolder;
  it.filter(x=>false).forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
- addAccessories(m,items,window._accOpts||{});noobPlay(m,"Idle");return m}
+ m.userData.headTop=5.1;addAccessories(m,items,window._accOpts||{});noobPlay(m,"Idle");return m}
 function noobPlay(m,name){const u=m.userData;if(u.cur==name||!u.acts[name])return;const a=u.acts[name];a.reset();a.setLoop(name=="Jump"?THREE.LoopOnce:THREE.LoopRepeat);a.clampWhenFinished=true;a.play();if(u.cur&&u.acts[u.cur])a.crossFadeFrom(u.acts[u.cur],.25,true);u.cur=name}
 const _v=()=>new THREE.Vector3();
 function noobAnim(m,moving,ground,emote,sw,tool){const u=m.userData;const t=performance.now();const dt=Math.min(.1,(t-u.last)/1000);u.last=t;
@@ -89,7 +89,7 @@ function makeObjChar(m,colors,items){const T=THREE,parts=objPartsR(m),it=eqItems
   else{const g2=templateUV(parts[k].g.clone(),keyOf[k],false);mesh=new T.Mesh(g2,new T.MeshLambertMaterial({map:ct}))}
   mesh.castShadow=true;piv.add(mesh);grp.add(piv);ud[k]=piv}
  ['la','ra','ll','rl','head','torso'].forEach(k=>{if(!ud[k]){ud[k]=new T.Group();grp.add(ud[k])}});
- outer.userData=ud;addAccessories(outer,items,window._accOpts||{});return outer}
+ ud.headTop=(parts.head&&(parts.head.g.computeBoundingBox(),parts.head.g.boundingBox.max.y+parts.head.p[1]))||5.05;outer.userData=ud;addAccessories(outer,items,window._accOpts||{});return outer}
 function makeBody(id,colors,items){const m=modelById(id);if(m&&m.id=="classic")return makeClassicChar(colors,items);if(m&&m.id!="noob"&&m._ready)return makeObjChar(m,colors,items);return makeNoob(colors,items)}
 setTimeout(loadObjModels,0);
 
@@ -102,7 +102,7 @@ function accGeometry(key){if(accGeo[key])return accGeo[key];const src=(window.BL
 function accMesh(a){accReady(a);const g=accGeometry(a.obj);if(!g)return null;const t=accTex[a.tex];const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:t.t,side:THREE.DoubleSide}));m.castShadow=true;return m}
 const HEAD_C=4.4,TORSO_C=3.0;
 function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=it.acc;if(!a)return;if((a.attach=="carpet"||a.attach=="hand")&&!opts.thumb)return;const m=accMesh(a);if(!m)return;const o=a.offset||[0,0,0];
- if(a.attach=="head")m.position.set(o[0],HEAD_C+o[1],o[2]);else if(a.attach=="back")m.position.set(o[0],TORSO_C+o[1],o[2]);else if(a.attach=="hand"){m.rotation.x=-Math.PI/2;m.position.set(1.5,2.1,0)}else m.position.set(0,.05,0);m.userData.acc=1;root.add(m)})}
+ if(a.attach=="head")m.position.set(o[0],(a.rel=="top"?(root.userData&&root.userData.headTop||opts.headTop||5.1):HEAD_C)+o[1],o[2]);else if(a.attach=="back")m.position.set(o[0],TORSO_C+o[1],o[2]);else if(a.attach=="hand"){m.rotation.x=-Math.PI/2;m.position.set(1.5,2.1,0)}else m.position.set(0,.05,0);m.userData.acc=1;root.add(m)})}
 
 /* ================= CLASSIC 2017 R6 BODY (Roblox .mesh parts from the asset pack) ================= */
 const clsGeo={},faceTex={};
@@ -112,7 +112,7 @@ function makeClassicChar(colors,items){const T=THREE,C=window.BLOX_CLASSIC,it=eq
  const part=(key,w,h,d,px,py,my)=>{const piv=new T.Group();piv.position.set(px,py,0);const g=templateUV(new T.BoxGeometry(w,h,d).toNonIndexed(),key,false);const m=new T.Mesh(g,new T.MeshLambertMaterial({map:ct}));m.position.y=my;m.castShadow=true;piv.add(m);root.add(piv);return piv};
  ud.torso=part("torso",2,2,1,0,3,0);ud.la=part("larm",1,2,1,-1.5,4,-1);ud.ra=part("rarm",1,2,1,1.5,4,-1);ud.ll=part("lleg",1,2,1,-.5,2,-1);ud.rl=part("rleg",1,2,1,.5,2,-1);
  const hi=it.find(x=>x.headKey),hk=hi&&C.heads[hi.headKey]?hi.headKey:"head";const hg=clsGeometry("h_"+hk,C.heads[hk]);const head=new T.Group();head.position.set(0,4.5,0);const hm=new T.Mesh(hg,new T.MeshLambertMaterial({color:colors.head}));hm.castShadow=true;head.add(hm);root.add(head);ud.head=head;addFace(head,hg,it,false);
- root.userData=ud;addAccessories(root,items,window._accOpts||{});return root}
+ hg.computeBoundingBox();ud.headTop=4.5+hg.boundingBox.max.y;root.userData=ud;addAccessories(root,items,window._accOpts||{});return root}
 
 /* Place a held gear model in the hand: map the model's forward/up axes onto the holder's. */
 function orientTool(mesh,a,skinned){const T=THREE,v=x=>new T.Vector3(...x).normalize();
@@ -162,3 +162,12 @@ function assetStats(){const acc=window.BLOX_ACCESSORIES||[],cl=I.filter(i=>i.clo
  return{acc:[new Set(acc.map(a=>a.tex)).size,Object.values(accTex).filter(t=>t.ok).length],cloth:[cl.length,cl.filter(i=>clothImgs[i.id]&&clothImgs[i.id].ok).length],faces:[fk.length,fk.filter(k=>AEL[k]&&AEL[k].complete).length],models:[om.length,om.filter(m=>m._ready).length],pack:!!window.BLOX_TEX}}
 function assetsLoaded(){const s=assetStats();return s.acc[1]>=s.acc[0]&&s.cloth[1]>=s.cloth[0]&&s.models[1]>=s.models[0]&&(!s.pack||s.faces[1]>=s.faces[0])}
 setTimeout(preloadAssets,50);
+
+let AV3=null;
+function stopAv3d(){if(AV3){cancelAnimationFrame(AV3.raf);AV3.ren.dispose();AV3=null}}
+function startAv3d(el){stopAv3d();if(!el||!window.THREE)return;const T=THREE,ren=new T.WebGLRenderer({antialias:true,alpha:true});ren.setPixelRatio(Math.min(2,devicePixelRatio));ren.setSize(300,340);el.appendChild(ren.domElement);
+ const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const dl=new T.DirectionalLight(0xffffff,.55);dl.position.set(-4,6,-8);sc.add(dl);const cam=new T.PerspectiveCamera(30,300/340,.1,100);
+ const ch=makeBody(S.bodyModel,S.colors,S.equipped);sc.add(ch);let yaw=.5,drag=null,auto=true;
+ ren.domElement.style.cursor="grab";ren.domElement.onpointerdown=e=>{drag=e.clientX;auto=false;ren.domElement.setPointerCapture(e.pointerId)};ren.domElement.onpointermove=e=>{if(drag!=null){yaw+=(e.clientX-drag)*.01;drag=e.clientX}};ren.domElement.onpointerup=()=>{drag=null};
+ let last=performance.now();AV3={ren,raf:0};(function loop(){if(!AV3)return;AV3.raf=requestAnimationFrame(loop);const t=performance.now(),dt=(t-last)/1000;last=t;if(auto)yaw+=dt*.4;ch.rotation.y=yaw;
+  if(ch.userData.skinned)noobAnim(ch,false,true,null,0,false);cam.position.set(0,3.1,-13);cam.lookAt(0,2.7,0);ren.render(sc,cam)})()}

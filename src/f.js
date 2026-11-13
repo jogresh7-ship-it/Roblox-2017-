@@ -171,7 +171,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  function animate(m,moving,ground,t,emote,sw){const u=m.userData;if(u.skinned){noobAnim(m,moving,ground,emote,sw,m===me&&eq>=0);return}let a=moving&&ground?Math.sin(t*10)*.9:0;u.la.rotation.set(a,0,0);u.ra.rotation.set(-a,0,0);u.ll.rotation.set(-a,0,0);u.rl.rotation.set(a,0,0);
   if(!ground){u.la.rotation.x=u.ra.rotation.x=Math.PI;u.ll.rotation.x=u.rl.rotation.x=0}
   if(emote=="wave")u.ra.rotation.set(Math.PI,0,Math.sin(t*12)*.5);else if(emote=="point")u.ra.rotation.x=Math.PI/2;else if(emote=="cheer"){u.la.rotation.x=u.ra.rotation.x=Math.PI+Math.sin(t*14)*.3}else if(emote=="dance"){u.la.rotation.z=Math.sin(t*8)*1.5;u.ra.rotation.z=-Math.sin(t*8)*1.5;u.ll.rotation.x=Math.sin(t*8)*.6;u.rl.rotation.x=-Math.sin(t*8)*.6;m.rotation.y+=.05}else if(emote=="laugh"){u.head.rotation.x=Math.sin(t*20)*.2}
-  if(sw){u.ra.rotation.x=Math.PI/2+Math.sin(sw*Math.PI)*1.2}else if(m===me&&eq>=0&&!emote)u.ra.rotation.x=Math.PI/2}
+  const holding=m===me&&eq>=0&&tools[eq]&&tools[eq].k!="carpet";if(sw){u.ra.rotation.set(Math.PI/2+Math.sin(sw*Math.PI)*1.2,0,0)}else if(holding&&!emote){u.ra.rotation.set(Math.PI/2,0,0)}}
  let last=performance.now(),loaded=false;
  const ls=["Requesting Server...","Joining Server...","Loading Game..."];let li=0;const lsi=setInterval(()=>{li++;if(li<3)$("#lstat").textContent=ls[li];else{clearInterval(lsi);$("#loadscr").remove();loaded=true}},900);$("#lcancel").onclick=()=>{clearInterval(lsi);leaveGame()};
  GM.iv=setInterval(()=>{if(!loaded)return;if(P.hp<100&&!P.dead)P.hp=Math.min(100,P.hp+1);
