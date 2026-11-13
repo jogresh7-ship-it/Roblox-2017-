@@ -239,6 +239,28 @@ footer a{margin:0 10px;font-size:16px;color:var(--tx2)}
 .mbtn{font:700 24px "Source Sans Pro",Arial!important}
 .confpage{margin-top:0!important;width:800px!important;max-width:96vw}
 .conftext{font:700 36px "Source Sans Pro",Arial!important;min-height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:0!important}
+/* 2017 Players page rows: dialog_white 9-slice, 60px tall, 80px pitch, .85/.65 transparency */
+.escbody .prow{position:relative;background:none!important;height:60px;min-height:60px!important;margin:0 0 20px!important;padding:0 12px!important;font:400 24px "Source Sans Pro",Arial}
+.escbody .prow:before{content:"";position:absolute;inset:0;background:#fff;border-radius:6px;opacity:.15;pointer-events:none;box-sizing:border-box}
+.escbody .prow:hover:before{opacity:.35}.escbody .prow>*{position:relative;z-index:1}
+.escbody .prow .row>div:first-child,.escbody .prow .row>div:first-child>div{width:36px!important;height:36px!important;flex:0 0 36px!important;border-radius:0!important}
+.escbody .prow .row{gap:12px!important}
+/* 2017 backpack: 60px slots, 5px buffer, rgb(31,31,31)@50%, equip border rgb(90,142,233) */
+#hotbar{gap:5px!important;bottom:30px!important}
+.slot{background:rgba(31,31,31,.5)!important;border:0!important;border-radius:0!important;box-shadow:none;font:400 12px "Source Sans Pro",Arial;color:#fff}
+.slot.on{box-shadow:inset 0 0 0 6px rgb(90,142,233)}
+.slot .k{font:700 14px "Source Sans Pro",Arial;left:4px;top:2px}
+#bparrow{position:absolute;left:50%;bottom:98px;transform:translateX(-50%);width:28px;height:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;cursor:pointer;opacity:.85}
+#bparrow:hover{filter:drop-shadow(0 0 2px #00A2FF)}
+#game.bpopen #bparrow{display:none}
+#bpfull .gpanel{position:relative;min-height:305px;box-sizing:border-box;overflow:visible!important}
+.bparr2{position:absolute;left:50%;top:-22px;transform:translateX(-50%);width:28px;height:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;cursor:pointer}
+#bpfull{background:none!important;align-items:flex-end!important;justify-content:center;padding-bottom:98px}
+#bpfull .gpanel{background:rgba(31,31,31,.5)!important;border-radius:0!important;width:665px!important;padding:0!important}
+#bpfull .gpanel>.row:first-child{height:40px;padding:0 5px}
+#bpfull #bps{width:200px!important;background:rgb(94,94,94)!important;border:0!important;color:#fff;height:30px}
+#bpfull #bpx{display:none}
+#bpfull #bpg{padding:5px;gap:5px!important}
 </style>
 </head>
 <body>
