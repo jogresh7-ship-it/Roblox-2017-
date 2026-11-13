@@ -44,17 +44,17 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  const solids=[{min:new T.Vector3(-256,-1,-256),max:new T.Vector3(256,0,256)}];
  const addBox=(x,y,z,w,h,d,c,kind)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshLambertMaterial({color:c}));m.position.set(x,y+h/2,z);m.castShadow=m.receiveShadow=true;scene.add(m);const s={min:new T.Vector3(x-w/2,y,z-d/2),max:new T.Vector3(x+w/2,y+h,z+d/2),kind,mesh:m};solids.push(s);return s};
  addBox(0,0,0,12,1,12,0x5a5a5a,"spawn");const sl=new T.Mesh(new T.PlaneGeometry(6,6),new T.MeshBasicMaterial({color:0x2154B9}));sl.rotation.x=-Math.PI/2;sl.position.y=1.02;scene.add(sl);
- const r=rng(g.seed);for(let i=0;i<14;i++){const a=r()*6.28,d=30+r()*90;addBox(Math.cos(a)*d,0,Math.sin(a)*d,ri(4,16,r),ri(2,14,r),ri(4,16,r),new T.Color(pick(BRICK.slice(5,30),r)).getHex())}
+ const r=rng(g.seed);
  (g.parts||[]).forEach(p=>addBox(p.x,p.y,p.z,p.sx,p.sy,p.sz,new T.Color(p.color).getHex()));
- // obby
- const stages=[];let ox=0,oy=1,oz=-20;for(let i=0;i<10;i++){const cp=i%3==0;for(let k=0;k<3;k++){oz-=7+ri(0,2,r);ox+=ri(-3,3,r);oy+=ri(0,2,r);const kl=k==1&&i%2==1;addBox(ox,oy-1,oz,4,1,4,kl?0xff2020:new T.Color(pick(["#0D69AC","#F5CD30","#4B974B","#DA8541"],r)).getHex(),kl?"kill":null)}
-  oz-=8;const s=addBox(ox,oy-1,oz,8,1,8,i==9?0xF5CD30:0x8DB78E,"check");s.stage=i+1;stages.push(s)}
- const coins=[];for(let i=0;i<25;i++){const m=new T.Mesh(new T.CylinderGeometry(.8,.8,.2,16),new T.MeshLambertMaterial({color:0xFFD700,emissive:0x664400}));m.rotation.x=Math.PI/2;const a=r()*6.28,d=10+r()*80;m.position.set(Math.cos(a)*d,1.5,Math.sin(a)*d);scene.add(m);coins.push(m)}
+ // just a baseplate
+ const stages=[];
+
+ const coins=[];
  // player
  const me=makeChar(S.colors,S.equipped);scene.add(me);
  const P={pos:new T.Vector3(0,1,0),vel:new T.Vector3(),yaw:0,ground:false,hp:100,dead:false,spawn:new T.Vector3(0,1,0),stage:0,coins:0,emote:null,emoteT:0};
  // npcs
- const npcs=U.slice(2,2+ri(6,10,r)).map((u,k)=>{const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10].id);const m=makeChar(u.colors,items);scene.add(m);const a=k*.8;return{u,m,pos:new T.Vector3(Math.cos(a)*20,1,Math.sin(a)*20),vel:new T.Vector3(),yaw:0,tgt:null,hp:100,dead:false,stage:ri(0,5,r),coins:ri(0,20,r),t:0}});
+ const npcs=[].map((u,k)=>{const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10].id);const m=makeChar(u.colors,items);scene.add(m);const a=k*.8;return{u,m,pos:new T.Vector3(Math.cos(a)*20,1,Math.sin(a)*20),vel:new T.Vector3(),yaw:0,tgt:null,hp:100,dead:false,stage:ri(0,5,r),coins:ri(0,20,r),t:0}});
  const keys={},tools=[{n:"Sword",c:"#A1A5A2",k:"sword"},{n:"Rocket Launcher",c:"#4B974B",k:"rocket"},{n:"Paintball Gun",c:"#0D69AC",k:"paint"},{n:"Gravity Coil",c:"#6E99CA",k:"grav"},{n:"Speed Coil",c:"#C4281C",k:"speed"},...S.inv.map(itemById).filter(i=>i&&i.top=="Gear").filter((v,i,a)=>a.indexOf(v)==i).map(i=>({n:i.name,c:i.color,k:i.name.includes("Coil")?(i.name.includes("Speed")?"speed":"grav"):i.sub=="Ranged"?"paint":i.sub=="Explosive"?"rocket":"sword"}))];
  const slots=tools.slice(0,10).map((t,i)=>i);let eq=-1,toolMesh=null;const proj=[],debris=[],bubbles=[];
  let yaw=0,pitch=.35,dist=18,lastAct=now(),shiftLock=false,rdrag=false,lastX=0,lastY=0,chatOpen=true,chatT=now(),plOpen=innerWidth>700,unread=0,swing=0,recording=false,clickTarget=null,frames=0,fpsT=performance.now(),fps=60;
