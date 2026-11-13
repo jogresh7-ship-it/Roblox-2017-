@@ -14,7 +14,7 @@ const nameColor=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))|0;return N
 const BADWORDS=["noob","stupid","dumb","idiot","scam","hate"];
 const filt=t=>t.replace(new RegExp("\\b("+BADWORDS.join("|")+")\\b","gi"),m=>"#".repeat(m.length));
 function studTex(){const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");x.fillStyle="#8c8f8d";x.fillRect(0,0,64,64);x.fillStyle="#9fa3a0";x.beginPath();x.arc(32,32,14,0,7);x.fill();x.strokeStyle="#6e716f";x.lineWidth=3;x.beginPath();x.arc(32,34,14,0.2,3);x.stroke();x.strokeStyle="#7a7d7b";x.strokeRect(0,0,64,64);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
-function makeChar(colors,items,opts={}){const T=THREE;return makeNoob(colors,items);const grp=new T.Group();const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts");
+function makeChar(colors,items,opts={}){const T=THREE;return makeBody(opts.model||S.bodyModel,colors,items);const grp=new T.Group();const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages"),tee=by("T-Shirts");
  const M=c=>new T.MeshLambertMaterial({color:c});const box=(w,h,d,c)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),M(c));m.castShadow=true;return m};
  const torso=box(2,2,1,shirt?shirt.color:colors.torso);torso.position.y=3;grp.add(torso);
  if(tee){const d=box(.8,.8,.02,tee.color);d.position.set(0,3.2,-.51);grp.add(d)}

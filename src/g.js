@@ -52,11 +52,41 @@ function noobBreak(m,scene,debris){const T=THREE,u=m.userData,sk=u.skin;m.update
 /* offscreen renderer: every avatar picture on the site is a render of the model */
 const AVPH="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#dfe3e6"/></svg>');
 const avCache={};let AVR=null;
-function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stringify([o.colors,o.items,!!o.head,o.bg||""]);if(avCache[key])return avCache[key];
+function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stringify([o.model||S.bodyModel,(modelById(o.model||S.bodyModel)||{})._ready?1:0,o.colors,o.items,!!o.head,o.bg||""]);if(avCache[key])return avCache[key];
  try{const T=THREE;if(!AVR){const r=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(300,300,false);const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const d=new T.DirectionalLight(0xffffff,.55);d.position.set(-4,6,-8);sc.add(d);AVR={r,sc,cam:new T.PerspectiveCamera(30,1,.1,100)}}
-  const m=makeNoob(o.colors,o.items||[]);m.rotation.y=.4;m.userData.mixer.update(.6);m.updateMatrixWorld(true);noobAnim(m,false,true,null,0,false);AVR.sc.add(m);
+  const m=makeBody(o.model||S.bodyModel,o.colors,o.items||[]);m.rotation.y=.4;if(m.userData.skinned){m.userData.mixer.update(.6);m.updateMatrixWorld(true);noobAnim(m,false,true,null,0,false)}AVR.sc.add(m);
   const c=AVR.cam;if(o.head){c.position.set(-1.1,4.75,-4.6);c.lookAt(0,4.5,0)}else{c.position.set(-3,2.9,-12.5);c.lookAt(0,2.55,0)}
   AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
 function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
 
 function onFaceAsset(){for(const k in avCache)delete avCache[k];for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
+/* ================= BODY MODELS =================
+   "noob" = the animated glTF model (built in).
+   Extra models come from assets/models/models.js (window.BLOX_MODELS): OBJ + texture,
+   split into head/torso/arms/legs and animated per part. */
+function objModels(){return window.BLOX_MODELS||[]}
+function bodyModels(){return [{id:"noob",name:"Noob",rig:"R6",note:"Rigged + animated",_ready:!!NOOB}].concat(objModels().map(m=>Object.assign(m,{note:m.note||"Part-animated"})))}
+function modelById(id){return bodyModels().find(m=>m.id==id)||bodyModels()[0]}
+function loadObjModels(){objModels().forEach(m=>{if(m._img)return;const im=new Image();im.onload=()=>{m._ready=true;onFaceAsset()};im.src=encodeURI(m.tex);m._img=im})}
+function objParts(m){if(m._parts)return m._parts;const T=THREE,V=[],VT=[],parts={head:[],torso:[],la:[],ra:[],ll:[],rl:[]};
+ const sy=m.shoulderY||3.3,hy=m.hipY||1.9;
+ for(const l of m.obj.split("\n")){const p=l.trim().split(/\s+/);if(p[0]=="v")V.push(p.slice(1,4).map(Number));else if(p[0]=="vt")VT.push(p.slice(1,3).map(Number));else if(p[0]=="f"){const ix=p.slice(1).map(t=>t.split("/").map(n=>parseInt(n)-1));
+   for(let k=1;k<ix.length-1;k++){const tri=[ix[0],ix[k],ix[k+1]];const c=[0,1,2].map(a=>tri.reduce((s,q)=>s+V[q[0]][a],0)/3);
+    const part=Math.abs(c[0])>1.02&&c[1]>hy-.3?(c[0]>0?"la":"ra"):c[1]>sy+.5&&Math.abs(c[0])<.9?"head":c[1]<hy?(c[0]>0?"ll":"rl"):"torso";parts[part].push(tri)}}}
+ const piv={head:[0,sy+.6,0],torso:[0,0,0],la:[1.32,sy,0],ra:[-1.32,sy,0],ll:[.5,hy,0],rl:[-.5,hy,0]};const out={};
+ for(const k in parts){if(!parts[k].length)continue;const pos=[],uv=[];for(const tri of parts[k])for(const q of tri){const v=V[q[0]];pos.push(v[0]-piv[k][0],v[1]-piv[k][1],v[2]-piv[k][2]);const t=VT[q[1]]||[0,0];uv.push(t[0],t[1])}
+  const g=new T.BufferGeometry();g.setAttribute("position",new T.Float32BufferAttribute(pos,3));g.setAttribute("uv",new T.Float32BufferAttribute(uv,2));g.computeVertexNormals();out[k]={g,p:piv[k]}}
+ return m._parts=out}
+const objTexCache={};
+function objTexture(m,faceKey){const k=m.id+"|"+(faceKey||"");if(objTexCache[k])return objTexCache[k];const im=m._img,c=document.createElement("canvas");c.width=im.width;c.height=im.height;const x=c.getContext("2d");x.drawImage(im,0,0);
+ if(faceKey&&AEL[faceKey]&&m.faceRect){const[fx,fy,fw,fh]=m.faceRect,sx=im.width/1024,sy2=im.height/1024;const p=x.getImageData(Math.round((fx-20)*sx),Math.round((fy-20)*sy2),1,1).data;x.fillStyle=`rgb(${p[0]},${p[1]},${p[2]})`;x.fillRect(fx*sx,fy*sy2,fw*sx,fh*sy2);x.drawImage(AEL[faceKey],fx*sx,fy*sy2,fw*sx,fh*sy2)}
+ const t=new THREE.CanvasTexture(c);return objTexCache[k]=t}
+function makeObjChar(m,colors,items){const T=THREE,parts=objParts(m),it=eqItems(items),fc=it.find(x=>x.sub=="Faces");const tex=objTexture(m,fc&&fc.faceImg);
+ const outer=new T.Group(),grp=new T.Group();grp.rotation.y=Math.PI;outer.add(grp);const ud={skinned:false,model:m.id};
+ const colOf={head:colors.head,torso:colors.torso,la:colors.la,ra:colors.ra,ll:colors.ll,rl:colors.rl};
+ for(const k in parts){const piv=new T.Group();piv.position.set(...parts[k].p);const mat=new T.MeshLambertMaterial({map:tex});mat.color.set(colOf[k]||"#ffffff").multiplyScalar(1.25);const mesh=new T.Mesh(parts[k].g,mat);mesh.castShadow=true;piv.add(mesh);grp.add(piv);ud[k]=piv}
+ ['la','ra','ll','rl','head','torso'].forEach(k=>{if(!ud[k]){ud[k]=new T.Group();grp.add(ud[k])}});
+ it.filter(x=>x.top=="Accessories").forEach(h=>{const b=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),new T.MeshLambertMaterial({color:h.color}));b.position.y=.9;ud.head.add(b)});
+ outer.userData=ud;return outer}
+function makeBody(id,colors,items){const m=modelById(id);if(m&&m.id!="noob"&&m._ready)return makeObjChar(m,colors,items);return makeNoob(colors,items)}
+setTimeout(loadObjModels,0);
