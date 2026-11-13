@@ -181,6 +181,18 @@ footer a{margin:0 10px;font-size:16px;color:var(--tx2)}
 .tbname{flex-direction:column;align-items:flex-end;justify-content:center;gap:3px}.tbname .nm{font-size:12px;font-weight:600}
 .tbname #hp{width:110px;height:5px;margin:0;border:0;border-radius:0;background:rgba(0,0,0,.5)}
 #game.menuopen #gchat,#game.menuopen #plist{display:none!important}
+/* 2017 topbar (TopbarConstants: 36px, rgb(31,31,31) @ 50%) */
+.gtop{background:rgba(31,31,31,.5)!important;gap:0!important;padding:0!important;height:36px}
+#game.menuopen .gtop{background:rgb(31,31,31)!important;z-index:6}
+.tbi{width:50px!important;height:36px}.tbi:hover{background:none!important}
+#cdot{width:18px;height:18px;top:0;right:4px;border-radius:50%;background:#E2231A;color:#fff;font:700 11px "Source Sans Pro",Arial;align-items:center;justify-content:center}
+.tbname{width:170px;height:36px;position:relative;display:block!important;padding:0!important}
+.tbname .nm{position:absolute;left:7px;right:7px;top:0;height:36px;display:flex;align-items:center;font:700 14px "Source Sans Pro",Arial;color:#fff;overflow:hidden;white-space:nowrap}
+.tbname.dmg .nm{height:22px;align-items:flex-end}
+.tbname #hp{position:absolute;left:7px;bottom:9px;width:156px!important;height:3px!important;background:#E4ECF6!important;border-radius:0;margin:0}
+#plist{top:40px!important;right:4px!important;width:170px!important;background:none!important;border-radius:0!important;font-size:14px}
+#plist>div:first-child{background:rgba(106,106,106,.5)!important;padding:4px 7px!important}
+#plist .r{background:rgba(31,31,31,.5);margin-top:2px;border-top:0!important;padding:4px 7px!important;color:#FFFFF3;text-shadow:0 0 2px rgba(34,34,34,.6)}
 </style>
 </head>
 <body>
@@ -301,8 +313,8 @@ const buxIco=(s=16)=>ico("bux",s);
    these files are used instead of the built-in drawings and synthesized sounds:
      assets/Topbar/...   assets/ui/...   assets/Sounds/...
    Nothing here is bundled; if a file is missing, the built-in version is used. */
-const AIMG={menu:"assets/Topbar/coloredlogo.png",menuOn:"assets/Topbar/coloredlogo.png",chat:"assets/Topbar/chatOff.png",chatOn:"assets/Topbar/chatOn.png",bp:"assets/Topbar/inventoryOff.png",bpOn:"assets/Topbar/inventoryOn.png",pl:"assets/Topbar/leaderboardOn.png",plOn:"assets/Topbar/leaderboardOn.png",
- hpBase:"assets/Topbar/HealthBarBase.png",hpFill:"assets/Topbar/HealthBar.png",lock:"assets/ui/mouseLock_on.png",gear:"assets/ui/Gear.png",friend:"assets/ui/PlayerlistFriendIcon.png",bc1:"assets/ui/TinyBcIcon.png",bc2:"assets/ui/TinyTbcIcon.png",bc3:"assets/ui/TinyObcIcon.png",
+const AIMG={menu:"assets/ui/Menu/Hamburger.png",menuOn:"assets/ui/Menu/HamburgerDown.png",chat:"assets/ui/Chat/Chat.png",chatOn:"assets/ui/Chat/ChatDown.png",bp:"assets/ui/Backpack/Backpack.png",bpOn:"assets/ui/Backpack/Backpack_Down.png",counter:"assets/ui/Chat/MessageCounter.png",
+lock:"assets/ui/mouseLock_on.png",gear:"assets/ui/Gear.png",friend:"assets/ui/icon_friends_16.png",bc1:"assets/ui/icon_BC-16.png",bc2:"assets/ui/icon_TBC-16.png",bc3:"assets/ui/icon_OBC-16.png",
  tabPlayers:"assets/ui/Settings/MenuBarIcons/PlayersTabIcon.png",tabSettings:"assets/ui/Settings/MenuBarIcons/GameSettingsTab.png",tabReport:"assets/ui/Settings/MenuBarIcons/ReportAbuseTab.png",tabHelp:"assets/ui/Settings/MenuBarIcons/HelpTab.png",tabRecord:"assets/ui/Settings/MenuBarIcons/RecordTab.png",
  mbtn:"assets/ui/Settings/MenuBarAssets/MenuButton.png",mbtnSel:"assets/ui/Settings/MenuBarAssets/MenuButtonSelected.png",msel:"assets/ui/Settings/MenuBarAssets/MenuSelection.png",
  kR:"assets/ui/Settings/Help/ResetIcon.png",kL:"assets/ui/Settings/Help/LeaveIcon.png",kESC:"assets/ui/Settings/Help/EscapeIcon.png",addFriend:"assets/ui/Settings/Players/AddFriendIcon.png",isFriend:"assets/ui/Settings/Players/FriendIcon.png",reportFlag:"assets/ui/Settings/Players/ReportFlagIcon.png",studs:"assets/ui/Studs.png"};
@@ -315,10 +327,11 @@ function candidates(p){const m=p.match(/^assets\/(Topbar|ui|Sounds)\/(.*)$/);if(
  for(const k in AIMG){const c=candidates(AIMG[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const im=new Image();im.onload=()=>{AOK[k]=p;applyAssets();assetCSS();if(k=='studs'&&window.onStuds)onStuds()};im.onerror=tryN;im.src=encodeURI(p)};tryN()}
  for(const k in ASND){const c=candidates(ASND[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const a=new Audio();a.preload="auto";a.oncanplaythrough=()=>{if(!SOK[k])SOK[k]=a};a.onerror=tryN;a.src=encodeURI(p)};tryN()}})();
 function assetStatus(){return `${Object.keys(AOK).length} of ${Object.keys(AIMG).length} images, ${Object.keys(SOK).length} of ${Object.keys(ASND).length} sounds`}
-const aimg=(k,s=28)=>AOK[k]?`<img src="${encodeURI(AOK[k])}" style="width:${s}px;height:${s}px;object-fit:contain;display:block">`:null;
+const ASZ={menu:[32,25],menuOn:[32,25],chat:[28,27],chatOn:[28,27],bp:[22,28],bpOn:[22,28]};
+const aimg=(k,s=28)=>{if(!AOK[k])return null;const z=ASZ[k]||[s,s];return `<img src="${encodeURI(AOK[k])}" style="width:${z[0]}px;height:${z[1]}px;object-fit:contain;display:block">`};
 function applyAssets(){
- $$(".tbi[data-a]").forEach(el=>{const k=el.dataset.a+(el.classList.contains("on")?"On":"");const h=aimg(k)||aimg(el.dataset.a);if(!h)return;const dot=el.querySelector("#cdot");const svg=el.querySelector("svg");if(svg)svg.style.display="none";let im=el.querySelector("img.ast");if(!im){el.insertAdjacentHTML("afterbegin",h.replace("<img","<img class=\"ast\""));im=el.querySelector("img.ast")}else im.src=encodeURI(AOK[k]||AOK[el.dataset.a]);if(dot)el.appendChild(dot)});
- const hp=$("#hp");if(hp&&AOK.hpBase&&!hp.dataset.ast){hp.dataset.ast=1;hp.style.background=`url("${encodeURI(AOK.hpBase)}") center/100% 100%`;hp.style.border="0";if(AOK.hpFill){hp.firstChild.style.backgroundImage=`url("${encodeURI(AOK.hpFill)}")`;hp.firstChild.style.backgroundSize="100% 100%";hp.firstChild.dataset.img=1}}
+ $$(".tbi[data-a]").forEach(el=>{const k=el.dataset.a+(el.classList.contains("on")?"On":"");const h=aimg(k)||aimg(el.dataset.a);if(!h)return;const dot=el.querySelector("#cdot");const svg=el.querySelector("svg");if(svg)svg.style.display="none";let im=el.querySelector("img.ast");if(!im){el.insertAdjacentHTML("afterbegin",h.replace("<img","<img class=\"ast\""));im=el.querySelector("img.ast")}else{const kk=AOK[k]?k:el.dataset.a;im.src=encodeURI(AOK[kk]);const z=ASZ[kk];if(z){im.style.width=z[0]+"px";im.style.height=z[1]+"px"}}if(dot)el.appendChild(dot)});
+ const cd=$("#cdot");if(cd&&AOK.counter&&!cd.dataset.ast){cd.dataset.ast=1;cd.style.background=`url("${encodeURI(AOK.counter)}") center/100% 100%`}
  const xh=$("#xhair");if(xh&&AOK.lock&&xh.tagName!="IMG"){xh.outerHTML=`<img id="xhair" src="${encodeURI(AOK.lock)}" style="position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-16px;display:${xh.style.display||"none"};pointer-events:none">`}
  const hg=$("#hgear");if(hg&&AOK.gear&&!hg.querySelector("img"))hg.innerHTML=aimg("gear",22)}
 function playAsset(kind,vol){const a=SOK[kind];if(!a)return false;try{const c=a.cloneNode();c.volume=Math.max(0,Math.min(1,vol));c.play().catch(()=>{})}catch(e){return false}return true}
@@ -865,7 +878,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  function applyQuality(){const q=st.quality;ren.setPixelRatio(Math.min(devicePixelRatio,.5+q*.15));ren.shadowMap.enabled=q>=4;sun.castShadow=q>=4;scene.fog=new T.Fog(0xcfe8ff,60+q*40,150+q*80);cam.far=200+q*180;cam.updateProjectionMatrix();scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}
  applyQuality();
  // chat
- function chat(name,text,sys,col){const d=document.createElement("div");d.innerHTML=sys?`<span style="color:#ccc">${esc(text)}</span>`:`<span style="color:${col||nameColor(name)};font-weight:700">[${esc(name)}]:</span> ${esc(filt(text))}`;ui.lines.appendChild(d);ui.lines.scrollTop=1e6;chatT=now();$("#gchat").style.opacity=1;if(!chatOpen&&!sys){unread++;$("#cdot").style.display="block"}}
+ function chat(name,text,sys,col){const d=document.createElement("div");d.innerHTML=sys?`<span style="color:#ccc">${esc(text)}</span>`:`<span style="color:${col||nameColor(name)};font-weight:700">[${esc(name)}]:</span> ${esc(filt(text))}`;ui.lines.appendChild(d);ui.lines.scrollTop=1e6;chatT=now();$("#gchat").style.opacity=1;if(!chatOpen&&!sys){unread++;const c=$("#cdot");c.style.display="flex";c.textContent=unread>9?"!":unread}}
  function bubble(obj,text){bubbles.push({obj,text:filt(text),t:now(),el:Object.assign(document.createElement("div"),{className:"bubblechat",textContent:filt(text)})});$("#bubbles").appendChild(bubbles[bubbles.length-1].el)}
  function say(text){text=text.slice(0,200);if(text.startsWith("/")){const [c,...a]=text.split(" ");
    if(c=="/e"&&["dance","wave","point","cheer","laugh"].includes(a[0])){P.emote=a[0];P.emoteT=now();return}
@@ -1010,7 +1023,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
   const fp=dist<1;if(fp&&!P.dead)me.visible=false;else if(!P.dead)me.visible=true;
   const off=new T.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch)).multiplyScalar(fp?.01:dist);cam.position.copy(head).add(off);cam.lookAt(head);if(fp)P.yaw=yaw;
   // hp
-  const hp=$("#hp");hp.style.display="block";hp.firstChild.style.width=P.hp+"%";if(!hp.firstChild.dataset.img)hp.firstChild.style.background=P.hp>60?"#2ecc40":P.hp>30?"#F5CD30":"#E2231A";
+  const hp=$("#hp");hp.style.display=P.hp<100?"block":"none";hp.firstChild.style.width=P.hp+"%";hp.firstChild.style.background=P.hp>66?"#1BFC6B":P.hp>33?"#FAEB00":"#FF1C00";$("#bname").classList.toggle("dmg",P.hp<100);
   if(chatOpen&&now()-chatT>30000)$("#gchat").style.opacity=.15;
   // bubbles
   for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];if(now()-b.t>6000||!b.obj.visible){b.el.remove();bubbles.splice(i,1);continue}const v=b.obj.position.clone().add(new T.Vector3(0,7,0)).project(cam);b.el.style.display=v.z<1?"block":"none";b.el.style.left=(v.x+1)/2*innerWidth+"px";b.el.style.top=(1-v.y)/2*innerHeight+"px";b.el.style.opacity=1-(now()-b.t)/6000}
