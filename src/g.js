@@ -65,7 +65,7 @@ function onFaceAsset(){for(const k in avCache)delete avCache[k];for(const k in t
    Extra models come from assets/models/models.js (window.BLOX_MODELS): OBJ + texture,
    split into head/torso/arms/legs and animated per part. */
 function objModels(){return window.BLOX_MODELS||[]}
-function bodyModels(){return [{id:"noob",name:"Noob",rig:"R6",note:"Rigged + animated",_ready:!!NOOB}].concat(objModels().map(m=>Object.assign(m,{note:m.note||"Part-animated"})))}
+function bodyModels(){return [{id:"noob",name:"Noob",rig:"R6",note:"Rigged + animated",_ready:!!NOOB}].concat(window.BLOX_CLASSIC?[{id:"classic",name:"Classic",rig:"R6",note:"2017 blocky body · head shapes",_ready:true}]:[],objModels().map(m=>Object.assign(m,{note:m.note||"Part-animated"})))}
 function modelById(id){return bodyModels().find(m=>m.id==id)||bodyModels()[0]}
 function loadObjModels(){objModels().forEach(m=>{if(m._img)return;const im=new Image();im.onload=()=>{m._ready=true;onFaceAsset()};im.src=encodeURI(m.tex);m._img=im})}
 function objParts(m){if(m._parts)return m._parts;const T=THREE,V=[],VT=[],parts={head:[],torso:[],la:[],ra:[],ll:[],rl:[]};
@@ -88,16 +88,28 @@ function makeObjChar(m,colors,items){const T=THREE,parts=objParts(m),it=eqItems(
  ['la','ra','ll','rl','head','torso'].forEach(k=>{if(!ud[k]){ud[k]=new T.Group();grp.add(ud[k])}});
  it.filter(x=>x.top=="Accessories"&&!x.acc).forEach(h=>{const b=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),new T.MeshLambertMaterial({color:h.color}));b.position.y=.9;ud.head.add(b)});
  outer.userData=ud;addAccessories(outer,items,window._accOpts||{});return outer}
-function makeBody(id,colors,items){const m=modelById(id);if(m&&m.id!="noob"&&m._ready)return makeObjChar(m,colors,items);return makeNoob(colors,items)}
+function makeBody(id,colors,items){const m=modelById(id);if(m&&m.id=="classic")return makeClassicChar(colors,items);if(m&&m.id!="noob"&&m._ready)return makeObjChar(m,colors,items);return makeNoob(colors,items)}
 setTimeout(loadObjModels,0);
 
 /* ================= OBJ ACCESSORIES (hats, hair, back, carpet gear) ================= */
 const accGeo={},accTex={};
-function accReady(a){if(!accTex[a.tex]){const im=new Image();accTex[a.tex]={im,ok:false,t:null};im.onload=()=>{accTex[a.tex].ok=true;const t=new THREE.CanvasTexture(im);accTex[a.tex].t=t;onFaceAsset()};im.src=encodeURI(a.tex)}return accTex[a.tex].ok}
+function accReady(a){if(!accTex[a.tex]){const im=new Image();const t=new THREE.Texture(im);accTex[a.tex]={im,ok:false,t};im.onload=()=>{accTex[a.tex].ok=true;t.needsUpdate=true;onFaceAsset()};im.src=encodeURI(a.tex)}return accTex[a.tex].ok}
 function accGeometry(key){if(accGeo[key])return accGeo[key];const src=(window.BLOX_ACCESSORY_OBJS||{})[key];if(!src)return null;const V=[],VT=[],pos=[],uv=[];
  for(const l of src.split("\n")){const p=l.trim().split(/\s+/);if(p[0]=="v")V.push(p.slice(1,4).map(Number));else if(p[0]=="vt")VT.push(p.slice(1,3).map(Number));else if(p[0]=="f"){const ix=p.slice(1).map(t=>t.split("/").map(n=>parseInt(n)-1));for(let k=1;k<ix.length-1;k++)for(const q of[ix[0],ix[k],ix[k+1]]){const v=V[q[0]];pos.push(v[0],v[1],v[2]);const t=VT[q[1]]||[0,0];uv.push(t[0],t[1])}}}
  const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return accGeo[key]=g}
-function accMesh(a){accReady(a);const g=accGeometry(a.obj);if(!g)return null;const t=accTex[a.tex];const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:t&&t.t||null,color:t&&t.t?0xffffff:0x999999,side:THREE.DoubleSide}));m.castShadow=true;return m}
-const HEAD_C=4.45,TORSO_C=3.0;
-function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=it.acc;if(!a)return;if(a.attach=="carpet"&&!opts.thumb)return;const m=accMesh(a);if(!m)return;const o=a.offset||[0,0,0];
- if(a.attach=="head")m.position.set(o[0],HEAD_C+o[1],o[2]);else if(a.attach=="back")m.position.set(o[0],TORSO_C+o[1],o[2]);else m.position.set(0,.05,0);m.userData.acc=1;root.add(m)})}
+function accMesh(a){accReady(a);const g=accGeometry(a.obj);if(!g)return null;const t=accTex[a.tex];const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:t.t,side:THREE.DoubleSide}));m.castShadow=true;return m}
+const HEAD_C=4.4,TORSO_C=3.0;
+function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=it.acc;if(!a)return;if((a.attach=="carpet"||a.attach=="hand")&&!opts.thumb)return;const m=accMesh(a);if(!m)return;const o=a.offset||[0,0,0];
+ if(a.attach=="head")m.position.set(o[0],HEAD_C+o[1],o[2]);else if(a.attach=="back")m.position.set(o[0],TORSO_C+o[1],o[2]);else if(a.attach=="hand"){m.rotation.x=-Math.PI/2;m.position.set(1.5,2.1,0)}else m.position.set(0,.05,0);m.userData.acc=1;root.add(m)})}
+
+/* ================= CLASSIC 2017 R6 BODY (Roblox .mesh parts from the asset pack) ================= */
+const clsGeo={},faceTex={};
+function clsGeometry(k,d){if(clsGeo[k])return clsGeo[k];const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(d.p,3));g.setAttribute("normal",new THREE.Float32BufferAttribute(d.n,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(d.t,2));g.setIndex(d.i);g.computeBoundingBox();return clsGeo[k]=g}
+function faceTexture(key){if(faceTex[key])return faceTex[key];const t=new THREE.Texture();faceTex[key]=t;const set=()=>{if(AEL[key]){t.image=AEL[key];t.needsUpdate=true;return true}};if(!set()){const iv=setInterval(()=>{if(set())clearInterval(iv)},300);setTimeout(()=>clearInterval(iv),20000)}return t}
+function makeClassicChar(colors,items){const T=THREE,C=window.BLOX_CLASSIC,it=eqItems(items);const root=new T.Group();const ud={skinned:false,model:"classic"};
+ const M=c=>new T.MeshLambertMaterial({color:c});const part=(k,col,px,py,my)=>{const piv=new T.Group();piv.position.set(px,py,0);const m=new T.Mesh(clsGeometry(k,C.parts[k]),M(col));m.position.y=my;m.castShadow=true;piv.add(m);root.add(piv);return piv};
+ ud.torso=part("torso",colors.torso,0,3,0);ud.la=part("la",colors.la,-1.5,4,-1);ud.ra=part("ra",colors.ra,1.5,4,-1);ud.ll=part("ll",colors.ll,-.5,2,-1);ud.rl=part("rl",colors.rl,.5,2,-1);
+ const hi=it.find(x=>x.headKey),hk=hi&&C.heads[hi.headKey]?hi.headKey:"head";const hg=clsGeometry("h_"+hk,C.heads[hk]);const head=new T.Group();head.position.set(0,4.5,0);const hm=new T.Mesh(hg,M(colors.head));hm.castShadow=true;head.add(hm);root.add(head);ud.head=head;
+ const fc=it.find(x=>x.sub=="Faces"),fk=fc&&fc.faceImg?fc.faceImg:"classicFace";const bb=hg.boundingBox;
+ const face=new T.Mesh(new T.PlaneGeometry(1.2,1.2),new T.MeshLambertMaterial({map:faceTexture(fk),transparent:true,depthWrite:false}));face.rotation.y=Math.PI;face.position.set(0,(bb.min.y+bb.max.y)/2,bb.min.z-.02);head.add(face);
+ root.userData=ud;addAccessories(root,items,window._accOpts||{});return root}
