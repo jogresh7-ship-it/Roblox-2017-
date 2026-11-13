@@ -81,11 +81,12 @@ const objTexCache={};
 function objTexture(m,faceKey){const k=m.id+"|"+(faceKey||"");if(objTexCache[k])return objTexCache[k];const im=m._img,c=document.createElement("canvas");c.width=im.width;c.height=im.height;const x=c.getContext("2d");x.drawImage(im,0,0);
  if(faceKey&&AEL[faceKey]&&m.faceRect){const[fx,fy,fw,fh]=m.faceRect,sx=im.width/1024,sy2=im.height/1024;const p=x.getImageData(Math.round((fx-20)*sx),Math.round((fy-20)*sy2),1,1).data;x.fillStyle=`rgb(${p[0]},${p[1]},${p[2]})`;x.fillRect(fx*sx,fy*sy2,fw*sx,fh*sy2);x.drawImage(AEL[faceKey],fx*sx,fy*sy2,fw*sx,fh*sy2)}
  const t=new THREE.CanvasTexture(c);return objTexCache[k]=t}
-function makeObjChar(m,colors,items){const T=THREE,parts=objParts(m),it=eqItems(items);const outer=new T.Group(),grp=new T.Group();grp.rotation.y=Math.PI;outer.add(grp);const ud={skinned:false,model:m.id};
+function objPartsR(m){if(m._partsR)return m._partsR;const src=objParts(m),out={};for(const k in src){const g=src[k].g.clone();g.rotateY(Math.PI);out[k]={g,p:[-src[k].p[0],src[k].p[1],-src[k].p[2]]}}return m._partsR=out}
+function makeObjChar(m,colors,items){const T=THREE,parts=objPartsR(m),it=eqItems(items);const outer=new T.Group(),grp=new T.Group();outer.add(grp);const ud={skinned:false,model:m.id};
  const ct=compTexture(colors,it);const keyOf={torso:"torso",la:"larm",ra:"rarm",ll:"lleg",rl:"rleg"};
  for(const k in parts){const piv=new T.Group();piv.position.set(...parts[k].p);let mesh;
-  if(k=="head"){mesh=new T.Mesh(parts[k].g,new T.MeshLambertMaterial({color:colors.head}));addFace(piv,parts[k].g,it,true)}
-  else{const g2=templateUV(parts[k].g.clone(),keyOf[k],true);mesh=new T.Mesh(g2,new T.MeshLambertMaterial({map:ct}))}
+  if(k=="head"){mesh=new T.Mesh(parts[k].g,new T.MeshLambertMaterial({color:colors.head}));addFace(piv,parts[k].g,it,false)}
+  else{const g2=templateUV(parts[k].g.clone(),keyOf[k],false);mesh=new T.Mesh(g2,new T.MeshLambertMaterial({map:ct}))}
   mesh.castShadow=true;piv.add(mesh);grp.add(piv);ud[k]=piv}
  ['la','ra','ll','rl','head','torso'].forEach(k=>{if(!ud[k]){ud[k]=new T.Group();grp.add(ud[k])}});
  outer.userData=ud;addAccessories(outer,items,window._accOpts||{});return outer}
