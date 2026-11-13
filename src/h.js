@@ -12,29 +12,30 @@ const ASND={oof:"assets/Sounds/uuhhh.mp3",jump:"assets/Sounds/action_jump.mp3",l
 (window.BLOX_FACES||[]).forEach((f,i)=>{AIMG["face"+i]="assets/faces/"+f.file});
 const AOK={},SOK={},AEL={};
 /* 3D textures must come from data URLs: browsers refuse images opened from disk inside WebGL/canvas */
-function texURL(p){const T=window.BLOX_TEX||{};return T[p]||encodeURI(p)}
+function texURL(p){const T=window.BLOX_TEX||{};return T[p]||(window.BLOX_INLINE||{})[p]||encodeURI(p)}
 const ADIRS={Topbar:["assets/Topbar/","assets/ui/Topbar/","assets/Topbar/ui/Topbar/","assets/Topbar/Topbar/","assets/AnSonicGuy's Old Roblox Topbar/ui/Topbar/","AnSonicGuy's Old Roblox Topbar/ui/Topbar/","assets/","Topbar/","ui/Topbar/",""],
  ui:["assets/ui/","assets/ui/ui/","assets/","ui/",""],faces:["assets/faces/","assets/","assets/games/","faces/","games/",""],Sounds:["assets/Sounds/","assets/Sounds/Sounds/","assets/sounds/","assets/","Sounds/",""]};
 function candidates(p){const m=p.match(/^assets\/(Topbar|ui|Sounds|faces)\/(.*)$/);if(!m)return[p];return ADIRS[m[1]].map(d=>d+m[2])}
-(function probe(){if(location.hostname.endsWith("claude.ai")||location.hostname.endsWith("claudeusercontent.com"))return;
- for(const k in AIMG){const c=candidates(AIMG[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const im=new Image();im.onload=()=>{AOK[k]=p;const T=window.BLOX_TEX||{};if(T[AIMG[k]]){const g=new Image();g.onload=()=>{AEL[k]=g;if(window.onFaceAsset)onFaceAsset()};g.src=T[AIMG[k]]}else AEL[k]=im;if(k.startsWith('face')&&window.onFaceAsset)onFaceAsset();applyAssets();assetCSS();if(k=='studs'&&window.onStuds)onStuds()};im.onerror=tryN;im.src=encodeURI(p)};tryN()}
- for(const k in ASND){const c=candidates(ASND[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const a=new Audio();a.preload="auto";a.oncanplaythrough=()=>{if(!SOK[k])SOK[k]=a};a.onerror=tryN;a.src=encodeURI(p)};tryN()}})();
+(function probe(){if(!window.BLOX_INLINE&&(location.hostname.endsWith("claude.ai")||location.hostname.endsWith("claudeusercontent.com")))return;
+ const INL=window.BLOX_INLINE||{};for(const k in AIMG){const c=INL[AIMG[k]]?[AIMG[k]]:candidates(AIMG[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const im=new Image();im.onload=()=>{AOK[k]=p;const T=window.BLOX_TEX||{};if(T[AIMG[k]]){const g=new Image();g.onload=()=>{AEL[k]=g;if(window.onFaceAsset)onFaceAsset()};g.src=T[AIMG[k]]}else AEL[k]=im;if(k.startsWith('face')&&window.onFaceAsset)onFaceAsset();applyAssets();assetCSS();if(k=='studs'&&window.onStuds)onStuds()};im.onerror=tryN;im.src=INL[p]||encodeURI(p)};tryN()}
+ for(const k in ASND){const c=INL[ASND[k]]?[ASND[k]]:candidates(ASND[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const a=new Audio();a.preload="auto";a.oncanplaythrough=()=>{if(!SOK[k])SOK[k]=a};a.onerror=tryN;a.src=INL[p]||encodeURI(p)};tryN()}})();
 function assetStatus(){return `${Object.keys(AOK).length} of ${Object.keys(AIMG).length} images, ${Object.keys(SOK).length} of ${Object.keys(ASND).length} sounds`}
 const ASZ={menu:[32,25],menuOn:[32,25],chat:[28,27],chatOn:[28,27],bp:[22,28],bpOn:[22,28]};
-const aimg=(k,s=28)=>{if(!AOK[k])return null;const z=ASZ[k]||[s,s];return `<img src="${encodeURI(AOK[k])}" style="width:${z[0]}px;height:${z[1]}px;object-fit:contain;display:block">`};
+const _src=p=>(window.BLOX_INLINE||{})[p]||encodeURI(p);
+const aimg=(k,s=28)=>{if(!AOK[k])return null;const z=ASZ[k]||[s,s];return `<img src="${_src(AOK[k])}" style="width:${z[0]}px;height:${z[1]}px;object-fit:contain;display:block">`};
 function applyAssets(){
- $$(".tbi[data-a]").forEach(el=>{const k=el.dataset.a+(el.classList.contains("on")?"On":"");const h=aimg(k)||aimg(el.dataset.a);if(!h)return;const dot=el.querySelector("#cdot");const svg=el.querySelector("svg");if(svg)svg.style.display="none";let im=el.querySelector("img.ast");if(!im){el.insertAdjacentHTML("afterbegin",h.replace("<img","<img class=\"ast\""));im=el.querySelector("img.ast")}else{const kk=AOK[k]?k:el.dataset.a;im.src=encodeURI(AOK[kk]);const z=ASZ[kk];if(z){im.style.width=z[0]+"px";im.style.height=z[1]+"px"}}if(dot)el.appendChild(dot)});
- const cd=$("#cdot");if(cd&&AOK.counter&&!cd.dataset.ast){cd.dataset.ast=1;cd.style.background=`url("${encodeURI(AOK.counter)}") center/100% 100%`}
- const xh=$("#xhair");if(xh&&AOK.lock&&xh.tagName!="IMG"){xh.outerHTML=`<img id="xhair" src="${encodeURI(AOK.lock)}" style="position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-16px;display:${xh.style.display||"none"};pointer-events:none">`}
- const hg=$("#hgear");if(hg&&AOK.gear&&!hg.querySelector("img.ast")){const s=hg.querySelector("svg");if(s)s.outerHTML=`<img class="ast" src="${encodeURI(AOK.gear)}" style="width:24px;height:24px;object-fit:contain">`}
- const hb=$("#hbell");if(hb&&AOK.notif&&!hb.querySelector("img.ast")){const s=hb.querySelector("svg");if(s)s.outerHTML=`<img class="ast" src="${encodeURI(AOK.notif)}" style="width:16px;height:22px;object-fit:contain">`}
+ $$(".tbi[data-a]").forEach(el=>{const k=el.dataset.a+(el.classList.contains("on")?"On":"");const h=aimg(k)||aimg(el.dataset.a);if(!h)return;const dot=el.querySelector("#cdot");const svg=el.querySelector("svg");if(svg)svg.style.display="none";let im=el.querySelector("img.ast");if(!im){el.insertAdjacentHTML("afterbegin",h.replace("<img","<img class=\"ast\""));im=el.querySelector("img.ast")}else{const kk=AOK[k]?k:el.dataset.a;im.src=_src(AOK[kk]);const z=ASZ[kk];if(z){im.style.width=z[0]+"px";im.style.height=z[1]+"px"}}if(dot)el.appendChild(dot)});
+ const cd=$("#cdot");if(cd&&AOK.counter&&!cd.dataset.ast){cd.dataset.ast=1;cd.style.background=`url("${_src(AOK.counter)}") center/100% 100%`}
+ const xh=$("#xhair");if(xh&&AOK.lock&&xh.tagName!="IMG"){xh.outerHTML=`<img id="xhair" src="${_src(AOK.lock)}" style="position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-16px;display:${xh.style.display||"none"};pointer-events:none">`}
+ const hg=$("#hgear");if(hg&&AOK.gear&&!hg.querySelector("img.ast")){const s=hg.querySelector("svg");if(s)s.outerHTML=`<img class="ast" src="${_src(AOK.gear)}" style="width:24px;height:24px;object-fit:contain">`}
+ const hb=$("#hbell");if(hb&&AOK.notif&&!hb.querySelector("img.ast")){const s=hb.querySelector("svg");if(s)s.outerHTML=`<img class="ast" src="${_src(AOK.notif)}" style="width:16px;height:22px;object-fit:contain">`}
  const ar=$("#bparrow");if(ar&&AOK.bpOpen){const open=$("#bpfull")&&$("#bpfull").classList.contains("on");ar.innerHTML=`<img src="${encodeURI(open?AOK.bpClose||AOK.bpOpen:AOK.bpOpen)}" style="width:14px;height:9px;display:block">`}}
 function playAsset(kind,vol){const a=SOK[kind];if(!a)return false;try{const c=a.cloneNode();c.volume=Math.max(0,Math.min(1,vol));c.play().catch(()=>{})}catch(e){return false}return true}
 let stepAudio=null;
 function footsteps(on,vol){if(!SOK.steps)return;if(!stepAudio){stepAudio=SOK.steps.cloneNode();stepAudio.loop=true}stepAudio.volume=Math.max(0,Math.min(1,vol));if(on&&stepAudio.paused)stepAudio.play().catch(()=>{});else if(!on&&!stepAudio.paused)stepAudio.pause()}
 
-const ai=(k,s,fb)=>AOK[k]?`<img src="${encodeURI(AOK[k])}" style="width:${s}px;height:${s}px;object-fit:contain;display:block">`:fb;
-function assetCSS(){let st=document.getElementById("astcss");if(!st){st=document.createElement("style");st.id="astcss";document.head.appendChild(st)}const u=k=>`url("${encodeURI(AOK[k])}")`;let c="";
+const ai=(k,s,fb)=>AOK[k]?`<img src="${_src(AOK[k])}" style="width:${s}px;height:${s}px;object-fit:contain;display:block">`:fb;
+function assetCSS(){let st=document.getElementById("astcss");if(!st){st=document.createElement("style");st.id="astcss";document.head.appendChild(st)}const u=k=>`url("${_src(AOK[k])}")`;let c="";
  if(AOK.mbtn)c+=`.ebtn{background:none!important;border:8px solid transparent;border-image:${u("mbtn")} 16 fill / 8px stretch;border-radius:0;padding:0 10px 0 0}`;
  if(AOK.mbtnSel)c+=`.ebtn:hover{border-image:${u("mbtnSel")} 16 fill / 8px stretch}`;
  if(AOK.msel)c+=`.esctabs div.on{border-bottom-color:transparent;background:${u("msel")} bottom/100% 4px no-repeat}`;
