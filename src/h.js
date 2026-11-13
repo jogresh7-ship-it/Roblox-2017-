@@ -7,9 +7,13 @@ const AIMG={menu:"assets/Topbar/coloredlogo.png",menuOn:"assets/Topbar/coloredlo
  hpBase:"assets/Topbar/HealthBarBase.png",hpFill:"assets/Topbar/HealthBar.png",lock:"assets/ui/mouseLock_on.png",gear:"assets/ui/Gear.png",friend:"assets/ui/PlayerlistFriendIcon.png",bc1:"assets/ui/TinyBcIcon.png",bc2:"assets/ui/TinyTbcIcon.png",bc3:"assets/ui/TinyObcIcon.png"};
 const ASND={oof:"assets/Sounds/uuhhh.mp3",jump:"assets/Sounds/action_jump.mp3",land:"assets/Sounds/action_jump_land.mp3",steps:"assets/Sounds/action_footsteps_plastic.mp3",swing:"assets/Sounds/swordslash.mp3",lunge:"assets/Sounds/swordlunge.mp3",equip:"assets/Sounds/unsheath.mp3",boom:"assets/Sounds/impact_explosion_01.mp3",badge:"assets/Sounds/victory.mp3",coin:"assets/Sounds/electronicpingshort.mp3",click:"assets/Sounds/button.mp3",hit:"assets/Sounds/hit.mp3",shoot:"assets/Sounds/Rubber band sling shot.mp3",splat:"assets/Sounds/splat.mp3",fall:"assets/Sounds/action_falling.mp3"};
 const AOK={},SOK={};
-(function probe(){if(location.protocol!="file:"&&!/^(localhost|127\.)/.test(location.hostname))return;
- for(const k in AIMG){const im=new Image();im.onload=()=>{AOK[k]=AIMG[k];applyAssets()};im.src=encodeURI(AIMG[k])}
- for(const k in ASND){const a=new Audio();a.preload="auto";a.oncanplaythrough=()=>{if(!SOK[k]){SOK[k]=a}};a.src=encodeURI(ASND[k])}})();
+const ADIRS={Topbar:["assets/Topbar/","assets/ui/Topbar/","assets/Topbar/ui/Topbar/","assets/Topbar/Topbar/","assets/AnSonicGuy's Old Roblox Topbar/ui/Topbar/","AnSonicGuy's Old Roblox Topbar/ui/Topbar/","assets/","Topbar/","ui/Topbar/",""],
+ ui:["assets/ui/","assets/ui/ui/","assets/","ui/",""],Sounds:["assets/Sounds/","assets/Sounds/Sounds/","assets/sounds/","assets/","Sounds/",""]};
+function candidates(p){const m=p.match(/^assets\/(Topbar|ui|Sounds)\/(.*)$/);if(!m)return[p];return ADIRS[m[1]].map(d=>d+m[2])}
+(function probe(){if(location.hostname.endsWith("claude.ai")||location.hostname.endsWith("claudeusercontent.com"))return;
+ for(const k in AIMG){const c=candidates(AIMG[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const im=new Image();im.onload=()=>{AOK[k]=p;applyAssets()};im.onerror=tryN;im.src=encodeURI(p)};tryN()}
+ for(const k in ASND){const c=candidates(ASND[k]);let i=0;const tryN=()=>{if(i>=c.length)return;const p=c[i++];const a=new Audio();a.preload="auto";a.oncanplaythrough=()=>{if(!SOK[k])SOK[k]=a};a.onerror=tryN;a.src=encodeURI(p)};tryN()}})();
+function assetStatus(){return `${Object.keys(AOK).length} of ${Object.keys(AIMG).length} images, ${Object.keys(SOK).length} of ${Object.keys(ASND).length} sounds`}
 const aimg=(k,s=28)=>AOK[k]?`<img src="${encodeURI(AOK[k])}" style="width:${s}px;height:${s}px;object-fit:contain;display:block">`:null;
 function applyAssets(){
  $$(".tbi[data-a]").forEach(el=>{const k=el.dataset.a+(el.classList.contains("on")?"On":"");const h=aimg(k)||aimg(el.dataset.a);if(!h)return;const dot=el.querySelector("#cdot");const svg=el.querySelector("svg");if(svg)svg.style.display="none";let im=el.querySelector("img.ast");if(!im){el.insertAdjacentHTML("afterbegin",h.replace("<img","<img class=\"ast\""));im=el.querySelector("img.ast")}else im.src=encodeURI(AOK[k]||AOK[el.dataset.a]);if(dot)el.appendChild(dot)});
