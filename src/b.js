@@ -72,7 +72,7 @@ function defaultStore(){const fr=[],rq=[];U.slice(1).forEach((u,i)=>{if(i<14)fr.
   notifs:[{id:1,kind:"text",text:"Welcome to BLOX! Customize your avatar to get started.",t:now()-6e5,read:false}],txns:[],badges:[],feed:[],comments:{},creations:[],chatlogs:{},myGroupsOwned:[],gameFavs:{},itemFavs:{},blocked:[],nextId:1000}}
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
 if(!S||!S.me)S=defaultStore();
-S.inv=(S.inv||[]).filter(id=>itemById(id));S.equipped=(S.equipped||[]).filter(id=>itemById(id));S.bodyModel=S.bodyModel||"noob";
+S.inv=(S.inv||[]).filter(id=>id>=5000||itemById(id));S.equipped=(S.equipped||[]).filter(id=>id>=5000||itemById(id));S.bodyModel=S.bodyModel||"noob";
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const nid=()=>++S.nextId;
 const owns=id=>S.inv.includes(+id);
@@ -93,7 +93,7 @@ function headshot(u,size=48,pres=true){const p=u.id===0?1:u.pres;return `<div st
 const thumbCache={};
 function gameThumb(g,w=150,h=150,v=0){const k="g"+w+"_"+h;if(thumbCache[k])return thumbCache[k];return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`)}
 function itemThumb(it,size=110){if(it.faceImg&&typeof AOK!="undefined"&&AOK[it.faceImg])return encodeURI(AOK[it.faceImg]);const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
- if(it.acc||it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const big=it.acc&&(it.acc.attach!="head");const r=renderAvatar({model:it.headKey?"classic":undefined,colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:!big&&(it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads"),thumb:true,bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
+ if(it.acc||it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const big=it.acc&&(it.acc.attach!="head");const r=renderAvatar({model:it.headKey||it.cloth?"classic":undefined,colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:!big&&(it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads"),thumb:true,bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
  const inner=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`;
  return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(inner)}
 function groupEmblem(g,size=64){return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" style="display:block;border-radius:3px"><rect width="64" height="64" fill="${g.color}"/><path d="M32 8 L54 18 V34 Q54 50 32 58 Q10 50 10 34 V18Z" fill="#fff3" stroke="#fff" stroke-width="2"/><text x="32" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Arial">${esc(g.name[0])}</text></svg>`}

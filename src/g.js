@@ -59,7 +59,7 @@ function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stri
   AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
 function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
 
-function onFaceAsset(){for(const k in avCache)delete avCache[k];for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
+function onFaceAsset(){for(const k in avCache)delete avCache[k];if(typeof objTexCache!="undefined")for(const k in objTexCache)delete objTexCache[k];if(typeof compCache!="undefined")for(const k in compCache)delete compCache[k];for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
 /* ================= BODY MODELS =================
    "noob" = the animated glTF model (built in).
    Extra models come from assets/models/models.js (window.BLOX_MODELS): OBJ + texture,
@@ -81,12 +81,13 @@ const objTexCache={};
 function objTexture(m,faceKey){const k=m.id+"|"+(faceKey||"");if(objTexCache[k])return objTexCache[k];const im=m._img,c=document.createElement("canvas");c.width=im.width;c.height=im.height;const x=c.getContext("2d");x.drawImage(im,0,0);
  if(faceKey&&AEL[faceKey]&&m.faceRect){const[fx,fy,fw,fh]=m.faceRect,sx=im.width/1024,sy2=im.height/1024;const p=x.getImageData(Math.round((fx-20)*sx),Math.round((fy-20)*sy2),1,1).data;x.fillStyle=`rgb(${p[0]},${p[1]},${p[2]})`;x.fillRect(fx*sx,fy*sy2,fw*sx,fh*sy2);x.drawImage(AEL[faceKey],fx*sx,fy*sy2,fw*sx,fh*sy2)}
  const t=new THREE.CanvasTexture(c);return objTexCache[k]=t}
-function makeObjChar(m,colors,items){const T=THREE,parts=objParts(m),it=eqItems(items),fc=it.find(x=>x.sub=="Faces");const tex=objTexture(m,fc&&fc.faceImg);
- const outer=new T.Group(),grp=new T.Group();grp.rotation.y=Math.PI;outer.add(grp);const ud={skinned:false,model:m.id};
- const colOf={head:colors.head,torso:colors.torso,la:colors.la,ra:colors.ra,ll:colors.ll,rl:colors.rl};
- for(const k in parts){const piv=new T.Group();piv.position.set(...parts[k].p);const mat=new T.MeshLambertMaterial({map:tex});mat.color.set(colOf[k]||"#ffffff").multiplyScalar(1.25);const mesh=new T.Mesh(parts[k].g,mat);mesh.castShadow=true;piv.add(mesh);grp.add(piv);ud[k]=piv}
+function makeObjChar(m,colors,items){const T=THREE,parts=objParts(m),it=eqItems(items);const outer=new T.Group(),grp=new T.Group();grp.rotation.y=Math.PI;outer.add(grp);const ud={skinned:false,model:m.id};
+ const ct=compTexture(colors,it);const keyOf={torso:"torso",la:"larm",ra:"rarm",ll:"lleg",rl:"rleg"};
+ for(const k in parts){const piv=new T.Group();piv.position.set(...parts[k].p);let mesh;
+  if(k=="head"){mesh=new T.Mesh(parts[k].g,new T.MeshLambertMaterial({color:colors.head}));addFace(piv,parts[k].g,it,true)}
+  else{const g2=templateUV(parts[k].g.clone(),keyOf[k],true);mesh=new T.Mesh(g2,new T.MeshLambertMaterial({map:ct}))}
+  mesh.castShadow=true;piv.add(mesh);grp.add(piv);ud[k]=piv}
  ['la','ra','ll','rl','head','torso'].forEach(k=>{if(!ud[k]){ud[k]=new T.Group();grp.add(ud[k])}});
- it.filter(x=>x.top=="Accessories"&&!x.acc).forEach(h=>{const b=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),new T.MeshLambertMaterial({color:h.color}));b.position.y=.9;ud.head.add(b)});
  outer.userData=ud;addAccessories(outer,items,window._accOpts||{});return outer}
 function makeBody(id,colors,items){const m=modelById(id);if(m&&m.id=="classic")return makeClassicChar(colors,items);if(m&&m.id!="noob"&&m._ready)return makeObjChar(m,colors,items);return makeNoob(colors,items)}
 setTimeout(loadObjModels,0);
@@ -106,12 +107,10 @@ function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=
 const clsGeo={},faceTex={};
 function clsGeometry(k,d){if(clsGeo[k])return clsGeo[k];const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(d.p,3));g.setAttribute("normal",new THREE.Float32BufferAttribute(d.n,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(d.t,2));g.setIndex(d.i);g.computeBoundingBox();return clsGeo[k]=g}
 function faceTexture(key){if(faceTex[key])return faceTex[key];const t=new THREE.Texture();faceTex[key]=t;const set=()=>{if(AEL[key]){t.image=AEL[key];t.needsUpdate=true;return true}};if(!set()){const iv=setInterval(()=>{if(set())clearInterval(iv)},300);setTimeout(()=>clearInterval(iv),20000)}return t}
-function makeClassicChar(colors,items){const T=THREE,C=window.BLOX_CLASSIC,it=eqItems(items);const root=new T.Group();const ud={skinned:false,model:"classic"};
- const M=c=>new T.MeshLambertMaterial({color:c});const part=(k,col,px,py,my)=>{const piv=new T.Group();piv.position.set(px,py,0);const m=new T.Mesh(clsGeometry(k,C.parts[k]),M(col));m.position.y=my;m.castShadow=true;piv.add(m);root.add(piv);return piv};
- ud.torso=part("torso",colors.torso,0,3,0);ud.la=part("la",colors.la,-1.5,4,-1);ud.ra=part("ra",colors.ra,1.5,4,-1);ud.ll=part("ll",colors.ll,-.5,2,-1);ud.rl=part("rl",colors.rl,.5,2,-1);
- const hi=it.find(x=>x.headKey),hk=hi&&C.heads[hi.headKey]?hi.headKey:"head";const hg=clsGeometry("h_"+hk,C.heads[hk]);const head=new T.Group();head.position.set(0,4.5,0);const hm=new T.Mesh(hg,M(colors.head));hm.castShadow=true;head.add(hm);root.add(head);ud.head=head;
- const fc=it.find(x=>x.sub=="Faces"),fk=fc&&fc.faceImg?fc.faceImg:"classicFace";const bb=hg.boundingBox;
- const face=new T.Mesh(new T.PlaneGeometry(1.2,1.2),new T.MeshLambertMaterial({map:faceTexture(fk),transparent:true,depthWrite:false}));face.rotation.y=Math.PI;face.position.set(0,(bb.min.y+bb.max.y)/2,bb.min.z-.02);head.add(face);
+function makeClassicChar(colors,items){const T=THREE,C=window.BLOX_CLASSIC,it=eqItems(items);const root=new T.Group();const ud={skinned:false,model:"classic"};const ct=compTexture(colors,it);
+ const part=(key,w,h,d,px,py,my)=>{const piv=new T.Group();piv.position.set(px,py,0);const g=templateUV(new T.BoxGeometry(w,h,d).toNonIndexed(),key,false);const m=new T.Mesh(g,new T.MeshLambertMaterial({map:ct}));m.position.y=my;m.castShadow=true;piv.add(m);root.add(piv);return piv};
+ ud.torso=part("torso",2,2,1,0,3,0);ud.la=part("larm",1,2,1,-1.5,4,-1);ud.ra=part("rarm",1,2,1,1.5,4,-1);ud.ll=part("lleg",1,2,1,-.5,2,-1);ud.rl=part("rleg",1,2,1,.5,2,-1);
+ const hi=it.find(x=>x.headKey),hk=hi&&C.heads[hi.headKey]?hi.headKey:"head";const hg=clsGeometry("h_"+hk,C.heads[hk]);const head=new T.Group();head.position.set(0,4.5,0);const hm=new T.Mesh(hg,new T.MeshLambertMaterial({color:colors.head}));hm.castShadow=true;head.add(hm);root.add(head);ud.head=head;addFace(head,hg,it,false);
  root.userData=ud;addAccessories(root,items,window._accOpts||{});return root}
 
 /* Place a held gear model in the hand: map the model's forward/up axes onto the holder's. */
@@ -120,3 +119,36 @@ function orientTool(mesh,a,skinned){const T=THREE,v=x=>new T.Vector3(...x).norma
  const Fh=skinned?v([0,0,-1]):v([0,-1,0]),Uh=skinned?v([0,1,0]):v([0,0,-1]),Sh=new T.Vector3().crossVectors(Uh,Fh);
  const Mm=new T.Matrix4().makeBasis(Sm,Um,Fm),Mh=new T.Matrix4().makeBasis(Sh,Uh,Fh);const R=Mh.multiply(Mm.transpose());
  mesh.quaternion.setFromRotationMatrix(R);const grip=new T.Vector3(...(a.grip||[0,0,0])).applyMatrix4(R);mesh.position.set(0,skinned?0:-2,0).sub(grip);return mesh}
+
+/* ================= CLOTHING: 2017 shirt/pants template (585x559) =================
+   Atlas = two template-sized halves: top = torso+arms (pants under shirt, T-shirt on the front),
+   bottom = legs (pants). UVs are box-projected per part onto the template rectangles. */
+const TPL={torso:{U:[231,8,128,64],F:[231,74,128,128],D:[231,204,128,64],R:[165,74,64,128],L:[361,74,64,128],B:[427,74,128,128]},
+ rarm:{L:[19,355,64,128],B:[85,355,64,128],R:[151,355,64,128],F:[217,355,64,128],U:[217,289,64,64],D:[217,485,64,64]},
+ larm:{F:[308,355,64,128],L:[374,355,64,128],B:[440,355,64,128],R:[506,355,64,128],U:[308,289,64,64],D:[308,485,64,64]}};
+TPL.rleg=TPL.rarm;TPL.lleg=TPL.larm;
+function templateUV(g,key,flipZ){const rects=TPL[key],low=key=="lleg"||key=="rleg";g.computeBoundingBox();const bb=g.boundingBox,P=g.attributes.position,n=P.count,uv=new Float32Array(n*2);
+ const w=bb.max.x-bb.min.x||1,h=bb.max.y-bb.min.y||1,d=bb.max.z-bb.min.z||1,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),nn=new THREE.Vector3();
+ for(let i=0;i<n;i+=3){a.fromBufferAttribute(P,i);b.fromBufferAttribute(P,i+1);c.fromBufferAttribute(P,i+2);nn.subVectors(b,a).cross(new THREE.Vector3().subVectors(c,a)).normalize();
+  let nx=nn.x,nz=flipZ?-nn.z:nn.z;if(flipZ)nx=-nx;const ax=Math.abs(nx),ay=Math.abs(nn.y),az=Math.abs(nz);
+  const face=ay>=ax&&ay>=az?(nn.y>0?"U":"D"):ax>=az?(nx>0?"R":"L"):(nz<0?"F":"B");const r=rects[face];
+  for(let j=0;j<3;j++){const p=[a,b,c][j];let x=p.x,z=p.z;if(flipZ){x=-x;z=-z}const X=(x-(flipZ?-bb.max.x:bb.min.x))/w,Y=(p.y-bb.min.y)/h,Z=(z-(flipZ?-bb.max.z:bb.min.z))/d;
+   let lu,lv;if(face=="F"){lu=1-X;lv=1-Y}else if(face=="B"){lu=X;lv=1-Y}else if(face=="R"){lu=1-Z;lv=1-Y}else if(face=="L"){lu=Z;lv=1-Y}else if(face=="U"){lu=1-X;lv=Z}else{lu=1-X;lv=1-Z}
+   const px=r[0]+Math.max(0,Math.min(1,lu))*r[2],py=r[1]+Math.max(0,Math.min(1,lv))*r[3]+(low?559:0);uv[(i+j)*2]=px/585;uv[(i+j)*2+1]=1-py/1118}}
+ g.setAttribute("uv",new THREE.BufferAttribute(uv,2));return g}
+const compCache={},clothImgs={};
+function clothImg(it){if(!it||!it.cloth)return null;if(clothImgs[it.id])return clothImgs[it.id].ok?clothImgs[it.id].im:null;const im=new Image();clothImgs[it.id]={im,ok:false};im.onload=()=>{clothImgs[it.id].ok=true;onFaceAsset()};im.src=it.cloth;return null}
+function compTexture(colors,it){const sh=it.find(x=>x.sub=="Shirts"),pa=it.find(x=>x.sub=="Pants"),ts=it.find(x=>x.sub=="T-Shirts");const S1=clothImg(sh),P1=clothImg(pa),T1=clothImg(ts);
+ const key=[colors.torso,colors.la,colors.ra,colors.ll,colors.rl,S1?sh.id:0,P1?pa.id:0,T1?ts.id:0].join("|");if(compCache[key])return compCache[key];
+ const c=document.createElement("canvas");c.width=585;c.height=1118;const x=c.getContext("2d");const fill=(r,col,oy=0)=>{x.fillStyle=col;x.fillRect(r[0],r[1]+oy,r[2],r[3])};
+ for(const r of Object.values(TPL.torso)){fill(r,colors.torso);fill(r,colors.torso,559)}for(const r of Object.values(TPL.rarm)){fill(r,colors.ra);fill(r,colors.rl,559)}for(const r of Object.values(TPL.larm)){fill(r,colors.la);fill(r,colors.ll,559)}
+ if(P1){x.save();x.beginPath();for(const r of Object.values(TPL.torso))x.rect(r[0],r[1],r[2],r[3]);x.clip();x.drawImage(P1,0,0,585,559);x.restore();x.drawImage(P1,0,559,585,559)}
+ if(S1)x.drawImage(S1,0,0,585,559);if(T1){const f=TPL.torso.F;x.drawImage(T1,f[0],f[1],f[2],f[3])}
+ const t=new THREE.CanvasTexture(c);t.anisotropy=4;return compCache[key]=t}
+/* face decal on the front of a head */
+function addFace(head,geo,it,flipZ){geo.computeBoundingBox();const bb=geo.boundingBox,fc=it.find(x=>x.sub=="Faces"),fk=fc&&fc.faceImg?fc.faceImg:"classicFace";const s=Math.min(bb.max.x-bb.min.x,bb.max.y-bb.min.y)*1.0;
+ const f=new THREE.Mesh(new THREE.PlaneGeometry(s,s),new THREE.MeshLambertMaterial({map:faceTexture(fk),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
+ if(flipZ){f.position.set(0,(bb.min.y+bb.max.y)/2,bb.max.z+.02)}else{f.rotation.y=Math.PI;f.position.set(0,(bb.min.y+bb.max.y)/2,bb.min.z-.02)}head.add(f)}
+/* user clothing (uploaded templates) become catalog items */
+function loadMyClothes(){(S.myClothes||[]).forEach(c=>{if(!itemById(c.id))I.push({id:c.id,name:c.name,top:"Clothing",sub:c.type,creator:0,price:0,limited:0,remaining:0,orig:0,offsale:true,fav:0,sales:0,color:"#888",color2:"#000",updated:c.t||NOW0,seed:c.id,cloth:c.data})})}
+loadMyClothes();
