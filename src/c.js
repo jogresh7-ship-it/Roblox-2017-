@@ -13,7 +13,7 @@ function renderHeader(){const unread=S.notifs.filter(n=>!n.read).length;
  <a class="navl hidesm" href="#/games">Games</a><a class="navl hidesm" href="#/catalog">Catalog</a><a class="navl hidesm" href="#/develop">Develop</a>
  <div id="search"><svg width="14" height="14" viewBox="0 0 24 24" style="color:#fff">${IC.search}</svg><input placeholder="Search" id="sq"></div>
  <span class="spacer"></span>
- <a class="hidesm" style="font-weight:600;cursor:default">${esc(S.me.name)}<span class="small" style="opacity:.7;margin-left:6px">13+</span></a>
+ <a class="hidesm" href="#/users/0/profile" style="font-weight:600">${esc(S.me.name)}<span class="small" style="opacity:.7;margin-left:6px">13+</span></a>
  ${S.me.bc?`<span class="hb">${bcIcon(S.me.bc,20)}</span>`:""}
  <span class="hb" id="hgear">${ico("gear",20,"#fff")}</span>
  <span class="hb" id="hbell">${ico("bell",20,"#fff")}${unread?`<span class="bubble">${unread}</span>`:""}</span>`;
@@ -95,7 +95,7 @@ function route(){clearInterval(curTimer);window.onscroll=null;const {parts,qs}=p
  S.loggedIn=true;if(false){$("#hdr").style.display=$("#side").style.display="none";m.style.margin="0";m.style.padding="0";m.innerHTML=pageLanding();bindLanding();return}
  $("#hdr").style.display="";m.style.margin="";m.style.marginLeft="0";m.style.padding="";
  if(parts[0]!="play")stopGame();if(parts[0]!="studio")closeStudio();
- const P={home:pageHome,games:pageGames,catalog:pageCatalog,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,play:pagePlay,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,studio:pageStudio};
+ const P={users:pageProfile,home:pageHome,games:pageGames,catalog:pageCatalog,develop:pageDevelop,upgrades:pageBux,premium:pageBC,transactions:pageTxn,settings:pageSettings,play:pagePlay,help:pageText,about:pageText,jobs:pageText,parents:pageText,terms:pageText,privacy:pageText,studio:pageStudio};
  const f=P[parts[0]];let html;try{html=f?f(parts,qs):page404()}catch(e){console.error(e);html=page404()}
  if(html!=null){m.innerHTML=html+footer();scrollTo(0,0)}
  renderSide();const af=window._after;window._after=null;af&&af()}

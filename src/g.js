@@ -3,9 +3,11 @@
 let NOOB=null;
 function loadNoob(){if(NOOB||!window.THREE||!THREE.GLTFLoader||!THREE.SkeletonUtils)return;
  try{new THREE.GLTFLoader().parse(NOOB_GLTF,"",gl=>{const T=THREE;const wrap=new T.Group();const inner=gl.scene;wrap.add(inner);
-   inner.updateMatrixWorld(true);const by=n=>{let f=null;inner.traverse(o=>{if(!f&&o.name.startsWith(n))f=o});return f};const hb=by("Head_end"),lb=by("Left Leg_end"),rb=by("Right Leg_end");let top,bot;
-   if(hb&&lb&&rb){top=hb.getWorldPosition(new T.Vector3()).y;bot=Math.min(lb.getWorldPosition(new T.Vector3()).y,rb.getWorldPosition(new T.Vector3()).y)}if(!(top>bot)){const bb=new T.Box3().setFromObject(inner);top=bb.max.y;bot=bb.min.y}
-   const s=5.1/((top-bot)||1);inner.scale.multiplyScalar(s);inner.position.y=-bot*s;inner.rotation.y=Math.PI;
+   inner.rotation.y=Math.PI;
+   // measure the real skinned pose (Idle) so the feet sit exactly on the ground
+   const idle=gl.animations.find(x=>/Idle$/.test(x.name));const mx=new T.AnimationMixer(inner);if(idle){mx.clipAction(idle).play();mx.update(.01)}
+   const meas=()=>{inner.updateMatrixWorld(true);let lo=1e9,hi=-1e9;const v=new T.Vector3();inner.traverse(o=>{if(o.isSkinnedMesh){o.skeleton.update();const p=o.geometry.attributes.position;for(let i=0;i<p.count;i+=3){v.fromBufferAttribute(p,i);if(o.boneTransform)o.boneTransform(i,v);v.applyMatrix4(o.matrixWorld);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y)}}});return[lo,hi]};
+   let [lo,hi]=meas();const s=5.1/((hi-lo)||1);inner.scale.multiplyScalar(s);[lo,hi]=meas();inner.position.y-=lo;mx.stopAllAction();mx.uncacheRoot(inner);
    let img=null;inner.traverse(o=>{if(o.isMesh&&o.material.map)img=o.material.map.image});
    NOOB={wrap,anims:gl.animations,img};onNoobReady();},e=>console.warn("model failed",e))}catch(e){console.warn(e)}}
 const texCache={};
@@ -16,10 +18,10 @@ function noobTexture(head,torso,legs){const k=head+torso+legs;if(texCache[k])ret
  x.putImageData(d,0,0);const tx=new THREE.CanvasTexture(c);tx.flipY=false;return texCache[k]=tx}
 function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages");
  const m=T.SkeletonUtils.clone(NOOB.wrap);const tex=noobTexture(colors.head,shirt?shirt.color:colors.torso,pants?pants.color:colors.ll);
- const bones={};m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.castShadow=true;o.frustumCulled=false}if(o.isBone||/_0\d|_end/.test(o.name))bones[o.name]=o});
+ let skin=null;const bones={};m.traverse(o=>{if(o.isSkinnedMesh)skin=o;if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.castShadow=true;o.frustumCulled=false}if(o.isBone||/_0\d|_end/.test(o.name))bones[o.name]=o});
  const find=n=>Object.values(bones).find(b=>b.name.startsWith(n));
  const mixer=new T.AnimationMixer(m);const acts={};NOOB.anims.forEach(a=>{acts[a.name.split("|").pop()]=mixer.clipAction(a)});
- m.userData={skinned:true,mixer,acts,cur:null,last:performance.now(),colors:{head:colors.head,torso:shirt?shirt.color:colors.torso,arm:colors.la,leg:pants?pants.color:colors.ll},
+ m.userData={skinned:true,skin,mixer,acts,cur:null,last:performance.now(),colors:{head:colors.head,torso:shirt?shirt.color:colors.torso,arm:colors.la,leg:pants?pants.color:colors.ll},
   bones:{head:find("Head_01"),headEnd:find("Head_end"),ra:find("Right Arm_end")||find("Right Arm"),torso:find("Torso"),la:find("Left Arm_end"),ll:find("Left Leg_end"),rl:find("Right Leg_end")},att:[]};
  m.userData.ra=new T.Group();m.add(m.userData.ra); // tool holder that follows the right hand
  const hatHolder=new T.Group();m.add(hatHolder);m.userData.hat=hatHolder;
@@ -33,10 +35,18 @@ function noobAnim(m,moving,ground,emote,sw,tool){const u=m.userData;const t=perf
  m.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(m.matrixWorld).invert();
  if(u.bones.headEnd||u.bones.head){const p=(u.bones.head||u.bones.headEnd).getWorldPosition(_v()).applyMatrix4(inv);u.hat.position.copy(p)}
  if(u.bones.ra){const p=u.bones.ra.getWorldPosition(_v()).applyMatrix4(inv);u.ra.position.copy(p);u.ra.rotation.x=sw?-Math.sin(sw*Math.PI)*1.4:0}}
-function noobBreak(m,scene,debris){const T=THREE,u=m.userData;m.updateMatrixWorld(true);const base=m.position.clone();
- [["head",[1.2,1.2,1.2],u.colors.head,4.6],["torso",[2,2,1],u.colors.torso,3],["la",[1,2,1],u.colors.arm,3],["ra",[1,2,1],u.colors.arm,3],["ll",[1,2,1],u.colors.leg,1],["rl",[1,2,1],u.colors.leg,1]].forEach(([k,s,c,y],i)=>{
-  const b=new T.Mesh(new T.BoxGeometry(...s),new T.MeshLambertMaterial({color:c}));const bn=u.bones[k];if(bn&&k!="ra"&&k!="la"&&k!="ll"&&k!="rl")bn.getWorldPosition(b.position);else b.position.set(base.x+(i==2?-1.5:i==3?1.5:i==4?-.5:i==5?.5:0),base.y+y,base.z);
-  b.rotation.y=m.rotation.y;scene.add(b);debris.push({m:b,v:new T.Vector3((Math.random()-.5)*14,8+Math.random()*8,(Math.random()-.5)*14),r:new T.Vector3(Math.random()*5,Math.random()*5,0),t:now()})});m.visible=false}
+function noobBreak(m,scene,debris){const T=THREE,u=m.userData,sk=u.skin;m.updateMatrixWorld(true);const ctr=m.position.clone().add(new T.Vector3(0,2.5,0));
+ const launch=(mesh,h)=>{const out=mesh.position.clone().sub(ctr);out.y=0;if(out.length()<.01)out.set(Math.random()-.5,0,Math.random()-.5);out.normalize().multiplyScalar(2+Math.random()*3);out.x+=(Math.random()-.5)*2;out.z+=(Math.random()-.5)*2;
+  scene.add(mesh);debris.push({m:mesh,h,v:new T.Vector3(out.x,4+Math.random()*5,out.z),r:new T.Vector3((Math.random()-.5)*8,(Math.random()-.5)*8,(Math.random()-.5)*8),t:now()})};
+ if(sk&&sk.boneTransform){sk.skeleton.update();const geo=sk.geometry,P=geo.attributes.position,UV=geo.attributes.uv,SI=geo.attributes.skinIndex,SW=geo.attributes.skinWeight,ID=geo.index;
+  const n=P.count,bk=new Float32Array(n*3),dom=new Int16Array(n),v=new T.Vector3();
+  for(let i=0;i<n;i++){v.fromBufferAttribute(P,i);sk.boneTransform(i,v);v.applyMatrix4(sk.matrixWorld);bk[i*3]=v.x;bk[i*3+1]=v.y;bk[i*3+2]=v.z;let b=0,w=-1;for(let k=0;k<4;k++){const ww=SW.getComponent(i,k);if(ww>w){w=ww;b=SI.getComponent(i,k)}}dom[i]=b}
+  const parts={};const tri=ID?ID.count/3:n/3;for(let t=0;t<tri;t++){const a=ID?ID.getX(t*3):t*3,b=ID?ID.getX(t*3+1):t*3+1,c=ID?ID.getX(t*3+2):t*3+2;const j=dom[a];const pp=parts[j]||(parts[j]={p:[],uv:[]});for(const q of[a,b,c]){pp.p.push(bk[q*3],bk[q*3+1],bk[q*3+2]);if(UV)pp.uv.push(UV.getX(q),UV.getY(q))}}
+  for(const j in parts){const pp=parts[j];const bg=new T.BufferGeometry();bg.setAttribute("position",new T.Float32BufferAttribute(pp.p,3));if(pp.uv.length)bg.setAttribute("uv",new T.Float32BufferAttribute(pp.uv,2));bg.computeBoundingBox();const c=new T.Vector3();bg.boundingBox.getCenter(c);bg.translate(-c.x,-c.y,-c.z);bg.computeVertexNormals();bg.computeBoundingSphere();
+   const mesh=new T.Mesh(bg,new T.MeshLambertMaterial({map:sk.material.map,side:T.DoubleSide}));mesh.castShadow=true;mesh.position.copy(c);launch(mesh,bg.boundingSphere.radius*.6)}}
+ else{[[1.2,1.2,1.2,u.colors.head,4.6,0],[2,2,1,u.colors.torso,3,0],[1,2,1,u.colors.arm,3,-1.5],[1,2,1,u.colors.arm,3,1.5],[1,2,1,u.colors.leg,1,-.5],[1,2,1,u.colors.leg,1,.5]].forEach(([a,b,c,col,y,x])=>{const mesh=new T.Mesh(new T.BoxGeometry(a,b,c),new T.MeshLambertMaterial({color:col}));mesh.position.set(m.position.x+x,m.position.y+y,m.position.z);launch(mesh,b/2)})}
+ [u.hat,u.ra].forEach(hold=>hold&&hold.children.slice().forEach(ch=>{const wp=ch.getWorldPosition(new T.Vector3());const cl=ch.clone();cl.position.copy(wp);launch(cl,.4)}));
+ m.visible=false}
 
 /* offscreen renderer: every avatar picture on the site is a render of the model */
 const AVPH="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#dfe3e6"/></svg>');
