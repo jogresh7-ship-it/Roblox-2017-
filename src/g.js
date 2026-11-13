@@ -101,7 +101,7 @@ function accGeometry(key){if(accGeo[key])return accGeo[key];const src=(window.BL
  const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return accGeo[key]=g}
 function accMesh(a){accReady(a);const g=accGeometry(a.obj);if(!g)return null;const t=accTex[a.tex];const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:t.t,side:THREE.DoubleSide}));m.castShadow=true;return m}
 const HEAD_C=4.4,TORSO_C=3.0;
-function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=it.acc;if(!a)return;if((a.attach=="carpet"||a.attach=="hand")&&!opts.thumb)return;const m=accMesh(a);if(!m)return;const o=(S.hatAdj&&S.hatAdj[it.id])||a.offset||[0,0,0];
+function addAccessories(root,items,opts={}){eqItems(items).forEach(it=>{const a=it.acc;if(!a)return;if((a.attach=="carpet"||a.attach=="hand")&&!opts.thumb)return;const m=accMesh(a);if(!m)return;const o=a.offset||[0,0,0];
  if(a.attach=="head")m.position.set(o[0],(a.rel=="top"?(root.userData&&root.userData.headTop||opts.headTop||5.1):HEAD_C)+o[1],o[2]);else if(a.attach=="back")m.position.set(o[0],TORSO_C+o[1],o[2]);else if(a.attach=="hand"){m.rotation.x=-Math.PI/2;m.position.set(1.5,2.1,0)}else m.position.set(0,.05,0);m.userData.acc=1;root.add(m)})}
 
 /* ================= CLASSIC 2017 R6 BODY (Roblox .mesh parts from the asset pack) ================= */
@@ -168,6 +168,6 @@ function stopAv3d(){if(AV3){cancelAnimationFrame(AV3.raf);AV3.ren.dispose();AV3=
 function startAv3d(el){stopAv3d();if(!el||!window.THREE)return;const T=THREE,ren=new T.WebGLRenderer({antialias:true,alpha:true});ren.setPixelRatio(Math.min(2,devicePixelRatio));ren.setSize(300,340);el.appendChild(ren.domElement);
  const sc=new T.Scene();sc.add(new T.HemisphereLight(0xffffff,0x888888,.95));const dl=new T.DirectionalLight(0xffffff,.55);dl.position.set(-4,6,-8);sc.add(dl);const cam=new T.PerspectiveCamera(30,300/340,.1,100);
  const ch=makeBody(S.bodyModel,S.colors,S.equipped);sc.add(ch);let yaw=window._avYaw??.5,drag=null,auto=window._avAuto??true;
- ren.domElement.style.cursor="grab";ren.domElement.onpointerdown=e=>{drag=e.clientX;auto=false;ren.domElement.setPointerCapture(e.pointerId)};ren.domElement.onpointermove=e=>{if(drag!=null){yaw+=(e.clientX-drag)*.01;drag=e.clientX}};ren.domElement.onpointerup=()=>{drag=null};
+ auto=true;
  let last=performance.now();AV3={ren,raf:0};(function loop(){if(!AV3)return;AV3.raf=requestAnimationFrame(loop);const t=performance.now(),dt=(t-last)/1000;last=t;if(auto)yaw+=dt*.4;ch.rotation.y=yaw;window._avYaw=yaw;window._avAuto=auto;
   if(ch.userData.skinned)noobAnim(ch,false,true,null,0,false);cam.position.set(0,3.1,-13);cam.lookAt(0,2.7,0);ren.render(sc,cam)})()}
