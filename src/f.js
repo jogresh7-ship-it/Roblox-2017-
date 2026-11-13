@@ -39,9 +39,9 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  <div class="gover" id="esc"></div><div class="gover" id="bpfull"></div><div class="gover" id="dlg"></div><div id="rec" style="display:none;position:absolute;top:44px;right:310px;color:#f44;font-weight:700;cursor:pointer">● Recording…</div>`;
  const st=S.settings;
  const ren=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});ren.setSize(innerWidth,innerHeight);ren.shadowMap.enabled=true;root.prepend(ren.domElement);
- const scene=new T.Scene();const sc=document.createElement("canvas");sc.width=2;sc.height=256;const sx=sc.getContext("2d");const gr=sx.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#3b8fe0");gr.addColorStop(.5,"#9cd0ff");gr.addColorStop(1,"#e9f5ff");sx.fillStyle=gr;sx.fillRect(0,0,2,256);scene.background=new T.Color(0x9cd0ff);
+ const scene=new T.Scene();const sc=document.createElement("canvas");sc.width=2;sc.height=256;const sx=sc.getContext("2d");const gr=sx.createLinearGradient(0,0,0,256);gr.addColorStop(0,"#3b8fe0");gr.addColorStop(.5,"#9cd0ff");gr.addColorStop(1,"#e9f5ff");sx.fillStyle=gr;sx.fillRect(0,0,2,256);scene.background=new T.Color(0xb8d9f7);const sky=makeSky(scene);const PS=makeParticles(scene);
  const cam=new T.PerspectiveCamera(70,innerWidth/innerHeight,.1,2000);
- scene.add(new T.HemisphereLight(0xffffff,0x667766,.65));const sun=new T.DirectionalLight(0xffffff,.8);sun.position.set(80,150,60);sun.castShadow=true;sun.shadow.camera.left=sun.shadow.camera.bottom=-120;sun.shadow.camera.right=sun.shadow.camera.top=120;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+ scene.add(new T.HemisphereLight(0xffffff,0x667766,.65));const sun=new T.DirectionalLight(0xfff4e0,.85);sun.position.set(80,150,60);sun.castShadow=true;sun.shadow.camera.left=sun.shadow.camera.bottom=-70;sun.shadow.camera.right=sun.shadow.camera.top=70;sun.shadow.camera.near=10;sun.shadow.camera.far=400;sun.shadow.bias=-0.0006;sun.shadow.normalBias=.03;scene.add(sun.target);ren.shadowMap.type=T.PCFSoftShadowMap;const SUNOFF=new T.Vector3(80,150,60);sun.shadow.mapSize.set(2048,2048);scene.add(sun);
  const sunball=new T.Mesh(new T.SphereGeometry(30,16,16),new T.MeshBasicMaterial({color:0xfff6c0}));sunball.position.set(400,600,300);scene.add(sunball);
  const base=new T.Mesh(new T.BoxGeometry(512,1,512),new T.MeshLambertMaterial({color:0x8a8d8b}));const studIt=(mat,n)=>{if(!AOK.studs)return;new T.TextureLoader().load(encodeURI(AOK.studs),t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(n,n);mat.map=t;mat.color.set(0xa3a2a5);mat.needsUpdate=true})};window.onStuds=()=>studIt(base.material,256);studIt(base.material,256);base.position.y=-.5;base.receiveShadow=true;scene.add(base);
  const solids=[{min:new T.Vector3(-256,-1,-256),max:new T.Vector3(256,0,256)}];
@@ -55,7 +55,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  const coins=[];
  // player
  const me=makeChar(S.colors,S.equipped);scene.add(me);
- const P={pos:new T.Vector3(0,1,0),vel:new T.Vector3(),yaw:0,ground:false,hp:100,dead:false,spawn:new T.Vector3(0,1,0),stage:0,coins:0,emote:null,emoteT:0};
+ const P={ff:Date.now()+5000,pos:new T.Vector3(0,1,0),vel:new T.Vector3(),yaw:0,ground:false,hp:100,dead:false,spawn:new T.Vector3(0,1,0),stage:0,coins:0,emote:null,emoteT:0};
  // npcs
  const npcs=[].map((u,k)=>{const items=[];if(u.hat>=0)items.push(I.filter(x=>x.sub=="Hats")[u.hat%10].id);const m=makeChar(u.colors,items);scene.add(m);const a=k*.8;return{u,m,pos:new T.Vector3(Math.cos(a)*20,1,Math.sin(a)*20),vel:new T.Vector3(),yaw:0,tgt:null,hp:100,dead:false,stage:ri(0,5,r),coins:ri(0,20,r),t:0}});
  const keys={},tools=[...S.inv.map(itemById).filter(i=>i&&i.top=="Gear").filter((v,i,a)=>a.indexOf(v)==i).map(i=>({n:i.name,c:i.color,k:i.name.includes("Coil")?(i.name.includes("Speed")?"speed":"grav"):i.sub=="Ranged"?"paint":i.sub=="Explosive"?"rocket":"sword"}))];
@@ -63,7 +63,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  let yaw=0,pitch=.35,dist=18,distT=18,vis=null,camP=null,lastAct=now(),shiftLock=false,rdrag=false,lastX=0,lastY=0,chatOpen=true,chatT=now(),plOpen=innerWidth>700,unread=0,swing=0,recording=false,clickTarget=null,frames=0,fpsT=performance.now(),fps=60;
  GM={gid:g.id,ren,raf:0,iv:0};
  const ui={lines:$("#clines"),cin:$("#cin2")};
- function applyQuality(){const q=st.quality;ren.setPixelRatio(Math.min(devicePixelRatio,.5+q*.15));ren.shadowMap.enabled=q>=4;sun.castShadow=q>=4;scene.fog=new T.Fog(0xcfe8ff,60+q*40,150+q*80);cam.far=200+q*180;cam.updateProjectionMatrix();scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}
+ function applyQuality(){const q=st.quality;ren.setPixelRatio(Math.min(devicePixelRatio,.5+q*.15));ren.shadowMap.enabled=q>=3;sun.castShadow=q>=3;const ms=q>=8?4096:q>=6?2048:1024;if(sun.shadow.mapSize.x!==ms){sun.shadow.mapSize.set(ms,ms);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}}PS.setQuality(q);scene.fog=new T.Fog(0xb8d9f7,60+q*40,150+q*80);cam.far=200+q*180;cam.updateProjectionMatrix();scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}
  applyQuality();
  // chat
  function chat(name,text,sys,col){const d=document.createElement("div");d.innerHTML=sys?`<span style="color:#ccc">${esc(text)}</span>`:`<span style="color:${col||nameColor(name)};font-weight:700">[${esc(name)}]:</span> ${esc(filt(text))}`;ui.lines.appendChild(d);ui.lines.scrollTop=1e6;chatT=now();$("#gchat").style.opacity=1;if(!chatOpen&&!sys){unread++;const c=$("#cdot");c.style.display="flex";c.textContent=unread>9?"!":unread}}
@@ -164,7 +164,7 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
  function breakApart(m){if(m.userData.skinned){noobBreak(m,scene,debris);return}m.traverse(c=>{if(c.isMesh){const wp=new T.Vector3();c.getWorldPosition(wp);const cl=c.clone();cl.position.copy(wp);cl.quaternion.copy(c.getWorldQuaternion(new T.Quaternion()));scene.add(cl);debris.push({m:cl,h:.5,v:new T.Vector3((Math.random()-.5)*14,8+Math.random()*8,(Math.random()-.5)*14),r:new T.Vector3(Math.random()*5,Math.random()*5,0),t:now()})}});m.visible=false}
  function resetChar(m){m.visible=true}
  function damage(d){if(P.dead)return;P.hp-=d;$("#vign").style.opacity=.7;setTimeout(()=>$("#vign").style.opacity=0,300);if(P.hp<=0)die()}
- function die(){if(P.dead)return;P.dead=true;P.hp=0;sfx("oof");breakApart(me);setTimeout(()=>{if(!GM||GM.dead2)return;P.dead=false;P.hp=100;P.pos.copy(P.spawn);P.vel.set(0,0,0);me.visible=true;debris.forEach(d=>scene.remove(d.m));debris.length=0},5000)}
+ function die(){if(P.dead)return;P.dead=true;P.hp=0;sfx("oof");PS.emit("dust",P.pos.clone().add(new T.Vector3(0,1.5,0)),16);breakApart(me);setTimeout(()=>{if(!GM||GM.dead2)return;P.dead=false;P.hp=100;P.pos.copy(P.spawn);P.ff=now()+3000;P.vel.set(0,0,0);me.visible=true;debris.forEach(d=>scene.remove(d.m));debris.length=0},5000)}
  function collide(pos,axis,vel,half,h){for(const s of solids){if(pos.x+half>s.min.x&&pos.x-half<s.max.x&&pos.z+half>s.min.z&&pos.z-half<s.max.z&&pos.y+h>s.min.y&&pos.y<s.max.y){
    if(axis=="y"){if(vel.y<=0){pos.y=s.max.y;vel.y=0;return s}else{pos.y=s.min.y-h;vel.y=0}}else if(axis=="x"){if(s.max.y-pos.y<1.1&&vel.x){pos.y=s.max.y}else pos.x=vel.x>0?s.min.x-half:s.max.x+half}else{if(s.max.y-pos.y<1.1&&vel.z){pos.y=s.max.y}else pos.z=vel.z>0?s.min.z-half:s.max.z+half}}}return null}
  function physics(ent,dt,grav){ent.vel.y-=grav*dt;let g=null;ent.pos.x+=ent.vel.x*dt;collide(ent.pos,"x",ent.vel,.9,5);ent.pos.z+=ent.vel.z*dt;collide(ent.pos,"z",ent.vel,.9,5);ent.pos.y+=ent.vel.y*dt;g=collide(ent.pos,"y",ent.vel,.9,5);ent.ground=!!g;return g}
@@ -188,10 +188,10 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
    if(clickTarget&&!ix&&!iz){const d=clickTarget.clone().sub(P.pos);d.y=0;if(d.length()<1)clickTarget=null;else{d.normalize();mx=d.x;mz=d.z}}else if(ix||iz)clickTarget=null;
    const ml=Math.hypot(mx,mz);if(ml>0){mx/=Math.max(1,ml);mz/=Math.max(1,ml)}
    const acc=1-Math.exp(-dt*(P.ground?(ml>0?9:11):3));P.vel.x+=(mx*speed-P.vel.x)*acc;P.vel.z+=(mz*speed-P.vel.z)*acc;
-   if(keys[" "]&&P.ground){P.vel.y=eq>=0&&tools[eq].k=="grav"?70:50;sfx("jump")}
+   if(keys[" "]&&P.ground){P.vel.y=eq>=0&&tools[eq].k=="grav"?70:50;sfx("jump");PS.emit("dust",P.pos,6)}
    const tyaw=shiftLock||dist<1?yaw:ml>0?Math.atan2(-mx,-mz):P.yaw;let dy=tyaw-P.yaw;while(dy>Math.PI)dy-=6.2832;while(dy<-Math.PI)dy+=6.2832;P.yaw+=dy*(1-Math.exp(-dt*(shiftLock||dist<1?30:14)));
    if(ml>0&&P.emote)P.emote=null;
-   const wasG=P.ground,fallV=P.vel.y;const gnd=physics(P,dt,eq>=0&&tools[eq].k=="grav"?60:196);if(!wasG&&P.ground&&fallV<-30)sfx("land");footsteps(P.ground&&Math.hypot(P.vel.x,P.vel.z)>2&&!P.dead,S.settings.volume/100*.6);
+   const wasG=P.ground,fallV=P.vel.y;const gnd=physics(P,dt,eq>=0&&tools[eq].k=="grav"?60:196);if(!wasG&&P.ground&&fallV<-30){sfx("land");PS.emit("dust",P.pos,Math.min(24,Math.round(-fallV/4)))}if(P.ground&&Math.hypot(P.vel.x,P.vel.z)>12&&Math.random()<.12)PS.emit("dust",P.pos,1);footsteps(P.ground&&Math.hypot(P.vel.x,P.vel.z)>2&&!P.dead,S.settings.volume/100*.6);
    if(gnd&&gnd.kind=="kill")damage(100);
    if(gnd&&gnd.kind=="check"&&gnd.stage>P.stage){P.stage=gnd.stage;P.spawn.set((gnd.min.x+gnd.max.x)/2,gnd.max.y,(gnd.min.z+gnd.max.z)/2);sfx("coin");chat("","Checkpoint! Stage "+P.stage,true);
     if(gnd.stage==10)awardBadge("Obby Master")}
@@ -208,9 +208,9 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
    physics(n,dt,196);if(n.pos.y<-50)n.pos.set(0,5,0);n.m.userData.vy=n.vel.y;n.m.userData.speed=12;n.m.position.copy(n.pos);n.m.rotation.y=n.yaw;animate(n.m,Math.hypot(n.vel.x,n.vel.z)>1,n.ground,t+n.u.id,null,0)});
   // projectiles
   for(let i=proj.length-1;i>=0;i--){const p=proj[i];p.m.position.addScaledVector(p.dir,p.sp*dt);let hit=now()-p.t>4000;const pp=p.m.position;
-   for(const s of solids)if(pp.x>s.min.x&&pp.x<s.max.x&&pp.y>s.min.y&&pp.y<s.max.y&&pp.z>s.min.z&&pp.z<s.max.z){hit=true;if(p.k=="paint"&&s.mesh){s.mesh.material.color.copy(p.m.material.color);sfx("splat")}break}
+   for(const s of solids)if(pp.x>s.min.x&&pp.x<s.max.x&&pp.y>s.min.y&&pp.y<s.max.y&&pp.z>s.min.z&&pp.z<s.max.z){hit=true;if(p.k=="paint"&&s.mesh){s.mesh.material.color.copy(p.m.material.color);sfx("splat");const c=p.m.material.color;PS.emit("splat",pp.clone(),[c.r,c.g,c.b])}break}
    npcs.forEach(n=>{if(!n.dead&&n.pos.clone().add(new T.Vector3(0,2.5,0)).distanceTo(pp)<2){hit=true;if(p.k=="paint")hurtNPC(n,15)}});
-   if(hit){scene.remove(p.m);proj.splice(i,1);if(p.k=="rocket"){sfx("boom");const ex=new T.Mesh(new T.SphereGeometry(6,16,16),new T.MeshBasicMaterial({color:0xff8800,transparent:true,opacity:.7}));ex.position.copy(pp);scene.add(ex);setTimeout(()=>scene.remove(ex),250);npcs.forEach(n=>{if(!n.dead&&n.pos.distanceTo(pp)<8)hurtNPC(n,60)});const dme=P.pos.distanceTo(pp);if(dme<8){damage(40);P.vel.add(P.pos.clone().sub(pp).normalize().multiplyScalar(40)).setY(40)}}}}
+   if(hit){scene.remove(p.m);proj.splice(i,1);if(p.k=="rocket"){sfx("boom");PS.emit("boom",pp.clone());const ex=new T.Mesh(new T.SphereGeometry(6,16,16),new T.MeshBasicMaterial({color:0xff8800,transparent:true,opacity:.7}));ex.position.copy(pp);scene.add(ex);setTimeout(()=>scene.remove(ex),250);npcs.forEach(n=>{if(!n.dead&&n.pos.distanceTo(pp)<8)hurtNPC(n,60)});const dme=P.pos.distanceTo(pp);if(dme<8){damage(40);P.vel.add(P.pos.clone().sub(pp).normalize().multiplyScalar(40)).setY(40)}}}}
   debris.forEach(d=>{if(d.rest)return;d.v.y-=60*dt;d.m.position.addScaledVector(d.v,dt);d.m.rotation.x+=d.r.x*dt;d.m.rotation.y+=d.r.y*dt;d.m.rotation.z+=d.r.z*dt;
    const p=d.m.position,h=d.h||.5;let fl=-1e9;for(const s of solids)if(p.x>s.min.x&&p.x<s.max.x&&p.z>s.min.z&&p.z<s.max.z&&s.max.y<=p.y+h+.6&&s.max.y>fl)fl=s.max.y;
    if(p.y-h<fl){p.y=fl+h;if(Math.abs(d.v.y)<3){d.v.set(0,0,0);d.r.multiplyScalar(0);d.rest=true}else{d.v.y=-d.v.y*.3;d.v.x*=.5;d.v.z*=.5;d.r.multiplyScalar(.5)}}});
@@ -225,8 +225,8 @@ function startGame(g){const T=THREE;loadNoob();S.played.includes(g.id)||S.played
   if(chatOpen&&now()-chatT>30000)$("#gchat").style.opacity=.15;
   // bubbles
   for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];if(now()-b.t>6000||!b.obj.visible){b.el.remove();bubbles.splice(i,1);continue}const v=b.obj.position.clone().add(new T.Vector3(0,7,0)).project(cam);b.el.style.display=v.z<1?"block":"none";b.el.style.left=(v.x+1)/2*innerWidth+"px";b.el.style.top=(1-v.y)/2*innerHeight+"px";b.el.style.opacity=1-(now()-b.t)/6000}
-  ren.render(scene,cam)}
- function awardBadge(n){if(S.badges.some(b=>b.game==g.id&&b.n==n))return;S.badges.push({game:g.id,n,t:now()});save();sfx("badge");const bp=$("#badgepop");bp.style.display="flex";bp.innerHTML=`<div style="width:50px;height:50px;border-radius:50%;background:#E8AB2D;display:flex;align-items:center;justify-content:center">${ico("star",28,"#fff")}</div><div>You've been awarded the '${n}' badge!</div>`;setTimeout(()=>bp.style.display="none",6000);chat("",S.me.name+" won the "+n+" badge!",true)}
+  if(P.ff&&now()<P.ff&&!P.dead)PS.emit("forcefield",me.position);proj.forEach(p=>{if(p.k=="rocket")PS.emit("smoke",p.m.position,1)});sky.position.copy(cam.position);sky.scale.setScalar(Math.max(.2,cam.far*.9/1500));sun.target.position.copy(P.pos);sun.position.copy(P.pos).add(SUNOFF);PS.update(dt);ren.render(scene,cam)}
+ function awardBadge(n){if(S.badges.some(b=>b.game==g.id&&b.n==n))return;S.badges.push({game:g.id,n,t:now()});save();sfx("badge");const bp=$("#badgepop");bp.style.display="flex";bp.innerHTML=`<div style="width:50px;height:50px;border-radius:50%;background:#E8AB2D;display:flex;align-items:center;justify-content:center">${ico("star",28,"#fff")}</div><div>You've been awarded the '${n}' badge!</div>`;setTimeout(()=>bp.style.display="none",6000);chat("",S.me.name+" won the "+n+" badge!",true);PS.emit("badge",P.pos.clone())}
  frame()}
 
 /* ================= STUDIO ================= */
