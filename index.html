@@ -352,7 +352,7 @@ function defaultStore(){const fr=[],rq=[];U.slice(1).forEach((u,i)=>{if(i<14)fr.
   notifs:[{id:1,kind:"text",text:"Welcome to BLOX! Customize your avatar to get started.",t:now()-6e5,read:false}],txns:[],badges:[],feed:[],comments:{},creations:[],chatlogs:{},myGroupsOwned:[],gameFavs:{},itemFavs:{},blocked:[],nextId:1000}}
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
 if(!S||!S.me)S=defaultStore();
-S.inv=(S.inv||[]).filter(id=>id>=5000||itemById(id));S.equipped=(S.equipped||[]).filter(id=>id>=5000||itemById(id));S.bodyModel=S.bodyModel||"noob";
+S.inv=(S.inv||[]).filter(id=>id>=5000||itemById(id));S.equipped=(S.equipped||[]).filter(id=>id>=5000||itemById(id));S.bodyModel=S.bodyModel||(window.BLOX_CLASSIC?"classic":"noob");
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const nid=()=>++S.nextId;
 const owns=id=>S.inv.includes(+id);
@@ -734,8 +734,8 @@ function pageAvatar2(parts,qs){const tab=qs.tab||"Body Models";const cur=modelBy
  else if(tab=="Faces"){const l=S.inv.map(itemById).filter(i=>i&&i.sub=="Faces").filter((v,i,a)=>a.indexOf(v)==i);body=`<div class="igrid">${l.map(i=>`<div class="icard ${S.equipped.includes(i.id)?"eq":""}" onclick="toggleEquip(${i.id})"><img src="${itemThumb(i)}"><div class="n">${esc(i.name)}</div></div>`).join("")||`<p class="muted">You don't own any faces yet. <a href="#/catalog?cat=Body%20Parts&sub=Faces">Get some in the Catalog</a>.</p>`}</div>`}
  else body=`<button class="btn-blue" onclick="outfitModal()">Create New Outfit</button><div class="igrid" style="margin-top:10px">${S.outfits.map((o,k)=>`<div class="icard" style="cursor:default"><img src="${renderAvatar({model:o.model||"noob",colors:o.colors,items:o.items,bg:"#eef0f2"})}" style="width:110px;height:110px"><div class="n">${esc(o.name)}</div><div class="small muted">${esc(modelById(o.model||"noob").name)} · ${modelById(o.model||"noob").rig}</div><div class="row wrapflex" style="gap:2px"><button onclick="const o=S.outfits[${k}];S.equipped=[...o.items];S.colors={...o.colors};S.bodyModel=o.model||'noob';save();refresh()">Wear</button><button onclick="outfitModal(${k})">Rename</button><button onclick="Object.assign(S.outfits[${k}],{items:[...S.equipped],colors:{...S.colors},model:S.bodyModel});save();toast('Outfit updated');route()">Update</button><button onclick="S.outfits.splice(${k},1);save();route()">Delete</button></div></div>`).join("")||"<p class=muted>No outfits yet.</p>"}</div>`;
  return `<div class="wrap"><h1>Avatar Editor</h1><div class="row wrapflex" style="align-items:flex-start"><div class="card" style="width:320px;text-align:center">${avatarSVG({size:300})}
- <div style="margin-top:8px;font-size:15px">Body model: <b>${esc(cur.name)}</b> <span class="pill">${cur.rig}</span></div><div class="small muted">${esc(cur.note)}</div>
- <p class="small">Avatar isn't loading correctly? <a onclick="for(const k in avCache)delete avCache[k];refresh()">Redraw</a></p></div>
+ <div style="margin-top:8px;font-size:15px">Body model: <b>${esc(cur.name)}</b> <span class="pill">${cur.rig}</span></div><div class="small muted">${esc(cur.note)}</div>${cur.id=="noob"&&eqItems(S.equipped).some(i=>i.cloth)?`<div class="small" style="color:#E2231A">The Noob body can't show shirts and pants — switch to Classic or Woman to see them.</div>`:""}
+ <p class="small">Avatar isn't loading correctly? <a onclick="for(const k in avCache)delete avCache[k];refresh()">Redraw</a></p>${(()=>{const s=assetStats();return s.pack||s.acc[0]?`<div class="small muted" style="text-align:left;border-top:1px solid var(--bd);padding-top:6px">Asset pack loaded:<br>Hat &amp; gear textures ${s.acc[1]}/${s.acc[0]} · Clothing ${s.cloth[1]}/${s.cloth[0]}<br>Faces ${s.faces[1]}/${s.faces[0]} · Body models ${s.models[1]}/${s.models[0]}</div>`:`<div class="small" style="color:#E2231A;text-align:left">Asset pack not found — open index.html from the BLOX folder with its assets folder next to it.</div>`})()}</div>
  <div class="card" style="flex:1;min-width:300px"><div class="tabs">${["Body Models","Skin Tone","Clothing","Faces","Heads","Accessories","Outfits"].map(t=>`<div class="${t==tab?"on":""}" onclick="go('#/avatar?tab=${encodeURIComponent(t)}')">${t}</div>`).join("")}</div>${body}</div></div></div>`}
 
 function uploadCloth(inp,type){const f=inp.files[0];if(!f)return;if(f.size>3e6){toast("That image is too big (max 3 MB).");return}const r=new FileReader();r.onload=()=>{const id=5000+Math.floor(Math.random()*1e7);const name=(f.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ")||type).slice(0,40);
@@ -900,7 +900,7 @@ function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s
   bones:{head:find("Head_01"),headEnd:find("Head_end"),ra:find("Right Arm_end")||find("Right Arm"),torso:find("Torso"),la:find("Left Arm_end"),ll:find("Left Leg_end"),rl:find("Right Leg_end")},att:[]};
  m.userData.ra=new T.Group();m.add(m.userData.ra); // tool holder that follows the right hand
  const hatHolder=new T.Group();m.add(hatHolder);m.userData.hat=hatHolder;
- it.filter(x=>x.top=="Accessories"&&!x.acc).forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
+ it.filter(x=>false).forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
  addAccessories(m,items,window._accOpts||{});noobPlay(m,"Idle");return m}
 function noobPlay(m,name){const u=m.userData;if(u.cur==name||!u.acts[name])return;const a=u.acts[name];a.reset();a.setLoop(name=="Jump"?THREE.LoopOnce:THREE.LoopRepeat);a.clampWhenFinished=true;a.play();if(u.cur&&u.acts[u.cur])a.crossFadeFrom(u.acts[u.cur],.25,true);u.cur=name}
 const _v=()=>new THREE.Vector3();
@@ -933,7 +933,7 @@ function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stri
   AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
 function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
 
-function onFaceAsset(){for(const k in avCache)delete avCache[k];if(typeof objTexCache!="undefined")for(const k in objTexCache)delete objTexCache[k];if(typeof compCache!="undefined")for(const k in compCache)delete compCache[k];for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
+function onFaceAsset(){for(const k in avCache)delete avCache[k];if(typeof objTexCache!="undefined")for(const k in objTexCache)delete objTexCache[k];if(typeof liveComps!="undefined")for(let i=liveComps.length-1;i>=0;i--)if(liveComps[i]())liveComps.splice(i,1);for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
 /* ================= BODY MODELS =================
    "noob" = the animated glTF model (built in).
    Extra models come from assets/models/models.js (window.BLOX_MODELS): OBJ + texture,
@@ -1013,13 +1013,15 @@ function templateUV(g,key,flipZ){const rects=TPL[key],low=key=="lleg"||key=="rle
  g.setAttribute("uv",new THREE.BufferAttribute(uv,2));return g}
 const compCache={},clothImgs={};
 function clothImg(it){if(!it||!it.cloth)return null;if(clothImgs[it.id])return clothImgs[it.id].ok?clothImgs[it.id].im:null;const im=new Image();clothImgs[it.id]={im,ok:false};im.onload=()=>{clothImgs[it.id].ok=true;onFaceAsset()};im.src=it.cloth;return null}
-function compTexture(colors,it){const sh=it.find(x=>x.sub=="Shirts"),pa=it.find(x=>x.sub=="Pants"),ts=it.find(x=>x.sub=="T-Shirts");const S1=clothImg(sh),P1=clothImg(pa),T1=clothImg(ts);
- const key=[colors.torso,colors.la,colors.ra,colors.ll,colors.rl,S1?sh.id:0,P1?pa.id:0,T1?ts.id:0].join("|");if(compCache[key])return compCache[key];
- const c=document.createElement("canvas");c.width=585;c.height=1118;const x=c.getContext("2d");const fill=(r,col,oy=0)=>{x.fillStyle=col;x.fillRect(r[0],r[1]+oy,r[2],r[3])};
- for(const r of Object.values(TPL.torso)){fill(r,colors.torso);fill(r,colors.torso,559)}for(const r of Object.values(TPL.rarm)){fill(r,colors.ra);fill(r,colors.rl,559)}for(const r of Object.values(TPL.larm)){fill(r,colors.la);fill(r,colors.ll,559)}
- if(P1){x.save();x.beginPath();for(const r of Object.values(TPL.torso))x.rect(r[0],r[1],r[2],r[3]);x.clip();x.drawImage(P1,0,0,585,559);x.restore();x.drawImage(P1,0,559,585,559)}
- if(S1)x.drawImage(S1,0,0,585,559);if(T1){const f=TPL.torso.F;x.drawImage(T1,f[0],f[1],f[2],f[3])}
- const t=new THREE.CanvasTexture(c);t.anisotropy=4;return compCache[key]=t}
+const liveComps=[];
+function compTexture(colors,it){const sh=it.find(x=>x.sub=="Shirts"),pa=it.find(x=>x.sub=="Pants"),ts=it.find(x=>x.sub=="T-Shirts");
+ const key=[colors.torso,colors.la,colors.ra,colors.ll,colors.rl,sh?sh.id:0,pa?pa.id:0,ts?ts.id:0].join("|");if(compCache[key])return compCache[key];
+ const c=document.createElement("canvas");c.width=585;c.height=1118;const t=new THREE.CanvasTexture(c);t.anisotropy=4;
+ const draw=()=>{const x=c.getContext("2d"),S1=clothImg(sh),P1=clothImg(pa),T1=clothImg(ts);x.clearRect(0,0,585,1118);const fill=(r,col,oy=0)=>{x.fillStyle=col;x.fillRect(r[0],r[1]+oy,r[2],r[3])};
+  for(const r of Object.values(TPL.torso)){fill(r,colors.torso);fill(r,colors.torso,559)}for(const r of Object.values(TPL.rarm)){fill(r,colors.ra);fill(r,colors.rl,559)}for(const r of Object.values(TPL.larm)){fill(r,colors.la);fill(r,colors.ll,559)}
+  if(P1){x.save();x.beginPath();for(const r of Object.values(TPL.torso))x.rect(r[0],r[1],r[2],r[3]);x.clip();x.drawImage(P1,0,0,585,559);x.restore();x.drawImage(P1,0,559,585,559)}
+  if(S1)x.drawImage(S1,0,0,585,559);if(T1){const f=TPL.torso.F;x.drawImage(T1,f[0],f[1],f[2],f[3])}t.needsUpdate=true;return !((sh&&!S1)||(pa&&!P1)||(ts&&!T1))};
+ if(!draw())liveComps.push(draw);return compCache[key]=t}
 /* face decal on the front of a head */
 function addFace(head,geo,it,flipZ){geo.computeBoundingBox();const bb=geo.boundingBox,fc=it.find(x=>x.sub=="Faces"),fk=fc&&fc.faceImg?fc.faceImg:"classicFace";const s=Math.min(bb.max.x-bb.min.x,bb.max.y-bb.min.y)*1.0;
  const f=new THREE.Mesh(new THREE.PlaneGeometry(s,s),new THREE.MeshLambertMaterial({map:faceTexture(fk),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
@@ -1027,6 +1029,13 @@ function addFace(head,geo,it,flipZ){geo.computeBoundingBox();const bb=geo.boundi
 /* user clothing (uploaded templates) become catalog items */
 function loadMyClothes(){(S.myClothes||[]).forEach(c=>{if(!itemById(c.id))I.push({id:c.id,name:c.name,top:"Clothing",sub:c.type,creator:0,price:0,limited:0,remaining:0,orig:0,offsale:true,fav:0,sales:0,color:"#888",color2:"#000",updated:c.t||NOW0,seed:c.id,cloth:c.data})})}
 loadMyClothes();
+
+/* ===== make sure every asset-pack picture is loaded before the game builds characters ===== */
+function preloadAssets(){(window.BLOX_ACCESSORIES||[]).forEach(a=>accReady(a));I.filter(i=>i.cloth).forEach(i=>clothImg(i));loadObjModels()}
+function assetStats(){const acc=window.BLOX_ACCESSORIES||[],cl=I.filter(i=>i.cloth),fk=Object.keys(AIMG).filter(k=>k.startsWith("face")||k=="classicFace"),om=objModels();
+ return{acc:[new Set(acc.map(a=>a.tex)).size,Object.values(accTex).filter(t=>t.ok).length],cloth:[cl.length,cl.filter(i=>clothImgs[i.id]&&clothImgs[i.id].ok).length],faces:[fk.length,fk.filter(k=>AEL[k]&&AEL[k].complete).length],models:[om.length,om.filter(m=>m._ready).length],pack:!!window.BLOX_TEX}}
+function assetsLoaded(){const s=assetStats();return s.acc[1]>=s.acc[0]&&s.cloth[1]>=s.cloth[0]&&s.models[1]>=s.models[0]&&(!s.pack||s.faces[1]>=s.faces[0])}
+setTimeout(preloadAssets,50);
 /* ================= BLOX ENGINE ADD-ONS: particles, sky, lighting ================= */
 function makeSprite(){const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,"rgba(255,255,255,1)");g.addColorStop(.4,"rgba(255,255,255,.6)");g.addColorStop(1,"rgba(255,255,255,0)");x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)}
 /* Pooled GPU particle system: one draw call per blend mode */
@@ -1064,7 +1073,7 @@ function makeSky(scene){const T=THREE;const m=new T.ShaderMaterial({side:T.BackS
 let GM=null; // game state
 function pagePlay(parts){const id=+parts[1];const g=gameById(id);if(!g)return page404();if(!window.THREE){$("#main").innerHTML=`<div class="wrap card"><h2>3D engine failed to load</h2><p>The game needs Three.js from cdnjs.cloudflare.com. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`;return null}
  if(GM&&GM.gid==id)return null;stopGame();loadNoob();
- if(!NOOB){let n=0;$("#main").innerHTML=`<div class="wrap card" style="text-align:center"><div class="spin"><i></i><i></i><i></i><i></i></div><p>Loading character model…</p></div>`;const iv=setInterval(()=>{n++;if(NOOB){clearInterval(iv);if(location.hash=="#/play/"+id)startGame(g)}else if(n>150){clearInterval(iv);$("#main").innerHTML=`<div class="wrap card"><h2>The character model couldn't load</h2><p>It needs the 3D loader from cdn.jsdelivr.net. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`}},100);return null}
+ if(!NOOB||!assetsLoaded()){preloadAssets();let n=0;$("#main").innerHTML=`<div class="wrap card" style="text-align:center"><div class="spin"><i></i><i></i><i></i><i></i></div><p>Loading character model…</p></div>`;const iv=setInterval(()=>{n++;if(NOOB&&(assetsLoaded()||n>80)){clearInterval(iv);if(location.hash=="#/play/"+id)startGame(g)}else if(n>150){clearInterval(iv);$("#main").innerHTML=`<div class="wrap card"><h2>The character model couldn't load</h2><p>It needs the 3D loader from cdn.jsdelivr.net. Check your connection and reload.</p><button onclick="go('#/games/${id}')">Back</button></div>`}},100);return null}
  startGame(g);return null}
 function stopGame(){footsteps(false,0);if(!GM)return;GM.dead2=true;cancelAnimationFrame(GM.raf);clearInterval(GM.iv);GM.ren.dispose();document.removeEventListener("keydown",GM.kd);document.removeEventListener("keyup",GM.ku);window.removeEventListener("resize",GM.rs);try{document.exitPointerLock&&document.exitPointerLock()}catch(e){}$("#game").classList.remove("on");$("#game").innerHTML="";GM=null}
 function leaveGame(){const id=GM.gid;stopGame();go("#/games/"+id)}

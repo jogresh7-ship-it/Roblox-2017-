@@ -26,7 +26,7 @@ function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s
   bones:{head:find("Head_01"),headEnd:find("Head_end"),ra:find("Right Arm_end")||find("Right Arm"),torso:find("Torso"),la:find("Left Arm_end"),ll:find("Left Leg_end"),rl:find("Right Leg_end")},att:[]};
  m.userData.ra=new T.Group();m.add(m.userData.ra); // tool holder that follows the right hand
  const hatHolder=new T.Group();m.add(hatHolder);m.userData.hat=hatHolder;
- it.filter(x=>x.top=="Accessories"&&!x.acc).forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
+ it.filter(x=>false).forEach(h=>{let g;const M=new T.MeshLambertMaterial({color:h.color});if(h.sub=="Hats"){g=new T.Mesh(new T.BoxGeometry(1.4,.6,1.4),M);g.position.y=.9}else if(h.sub=="Hair"){g=new T.Mesh(new T.BoxGeometry(1.3,.4,1.3),M);g.position.y=.7}else if(h.sub=="Face"){g=new T.Mesh(new T.BoxGeometry(1,.25,.1),new T.MeshLambertMaterial({color:0x111111}));g.position.set(0,.15,-.62)}else if(h.sub=="Back"){g=new T.Mesh(new T.BoxGeometry(2.4,1.6,.2),M);g.position.set(0,-1.3,.6)}else{g=new T.Mesh(new T.BoxGeometry(.5,.5,.5),M);g.position.set(.6,-.6,0)}g.castShadow=true;hatHolder.add(g)});
  addAccessories(m,items,window._accOpts||{});noobPlay(m,"Idle");return m}
 function noobPlay(m,name){const u=m.userData;if(u.cur==name||!u.acts[name])return;const a=u.acts[name];a.reset();a.setLoop(name=="Jump"?THREE.LoopOnce:THREE.LoopRepeat);a.clampWhenFinished=true;a.play();if(u.cur&&u.acts[u.cur])a.crossFadeFrom(u.acts[u.cur],.25,true);u.cur=name}
 const _v=()=>new THREE.Vector3();
@@ -59,7 +59,7 @@ function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stri
   AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
 function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
 
-function onFaceAsset(){for(const k in avCache)delete avCache[k];if(typeof objTexCache!="undefined")for(const k in objTexCache)delete objTexCache[k];if(typeof compCache!="undefined")for(const k in compCache)delete compCache[k];for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
+function onFaceAsset(){for(const k in avCache)delete avCache[k];if(typeof objTexCache!="undefined")for(const k in objTexCache)delete objTexCache[k];if(typeof liveComps!="undefined")for(let i=liveComps.length-1;i>=0;i--)if(liveComps[i]())liveComps.splice(i,1);for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}
 /* ================= BODY MODELS =================
    "noob" = the animated glTF model (built in).
    Extra models come from assets/models/models.js (window.BLOX_MODELS): OBJ + texture,
@@ -139,13 +139,15 @@ function templateUV(g,key,flipZ){const rects=TPL[key],low=key=="lleg"||key=="rle
  g.setAttribute("uv",new THREE.BufferAttribute(uv,2));return g}
 const compCache={},clothImgs={};
 function clothImg(it){if(!it||!it.cloth)return null;if(clothImgs[it.id])return clothImgs[it.id].ok?clothImgs[it.id].im:null;const im=new Image();clothImgs[it.id]={im,ok:false};im.onload=()=>{clothImgs[it.id].ok=true;onFaceAsset()};im.src=it.cloth;return null}
-function compTexture(colors,it){const sh=it.find(x=>x.sub=="Shirts"),pa=it.find(x=>x.sub=="Pants"),ts=it.find(x=>x.sub=="T-Shirts");const S1=clothImg(sh),P1=clothImg(pa),T1=clothImg(ts);
- const key=[colors.torso,colors.la,colors.ra,colors.ll,colors.rl,S1?sh.id:0,P1?pa.id:0,T1?ts.id:0].join("|");if(compCache[key])return compCache[key];
- const c=document.createElement("canvas");c.width=585;c.height=1118;const x=c.getContext("2d");const fill=(r,col,oy=0)=>{x.fillStyle=col;x.fillRect(r[0],r[1]+oy,r[2],r[3])};
- for(const r of Object.values(TPL.torso)){fill(r,colors.torso);fill(r,colors.torso,559)}for(const r of Object.values(TPL.rarm)){fill(r,colors.ra);fill(r,colors.rl,559)}for(const r of Object.values(TPL.larm)){fill(r,colors.la);fill(r,colors.ll,559)}
- if(P1){x.save();x.beginPath();for(const r of Object.values(TPL.torso))x.rect(r[0],r[1],r[2],r[3]);x.clip();x.drawImage(P1,0,0,585,559);x.restore();x.drawImage(P1,0,559,585,559)}
- if(S1)x.drawImage(S1,0,0,585,559);if(T1){const f=TPL.torso.F;x.drawImage(T1,f[0],f[1],f[2],f[3])}
- const t=new THREE.CanvasTexture(c);t.anisotropy=4;return compCache[key]=t}
+const liveComps=[];
+function compTexture(colors,it){const sh=it.find(x=>x.sub=="Shirts"),pa=it.find(x=>x.sub=="Pants"),ts=it.find(x=>x.sub=="T-Shirts");
+ const key=[colors.torso,colors.la,colors.ra,colors.ll,colors.rl,sh?sh.id:0,pa?pa.id:0,ts?ts.id:0].join("|");if(compCache[key])return compCache[key];
+ const c=document.createElement("canvas");c.width=585;c.height=1118;const t=new THREE.CanvasTexture(c);t.anisotropy=4;
+ const draw=()=>{const x=c.getContext("2d"),S1=clothImg(sh),P1=clothImg(pa),T1=clothImg(ts);x.clearRect(0,0,585,1118);const fill=(r,col,oy=0)=>{x.fillStyle=col;x.fillRect(r[0],r[1]+oy,r[2],r[3])};
+  for(const r of Object.values(TPL.torso)){fill(r,colors.torso);fill(r,colors.torso,559)}for(const r of Object.values(TPL.rarm)){fill(r,colors.ra);fill(r,colors.rl,559)}for(const r of Object.values(TPL.larm)){fill(r,colors.la);fill(r,colors.ll,559)}
+  if(P1){x.save();x.beginPath();for(const r of Object.values(TPL.torso))x.rect(r[0],r[1],r[2],r[3]);x.clip();x.drawImage(P1,0,0,585,559);x.restore();x.drawImage(P1,0,559,585,559)}
+  if(S1)x.drawImage(S1,0,0,585,559);if(T1){const f=TPL.torso.F;x.drawImage(T1,f[0],f[1],f[2],f[3])}t.needsUpdate=true;return !((sh&&!S1)||(pa&&!P1)||(ts&&!T1))};
+ if(!draw())liveComps.push(draw);return compCache[key]=t}
 /* face decal on the front of a head */
 function addFace(head,geo,it,flipZ){geo.computeBoundingBox();const bb=geo.boundingBox,fc=it.find(x=>x.sub=="Faces"),fk=fc&&fc.faceImg?fc.faceImg:"classicFace";const s=Math.min(bb.max.x-bb.min.x,bb.max.y-bb.min.y)*1.0;
  const f=new THREE.Mesh(new THREE.PlaneGeometry(s,s),new THREE.MeshLambertMaterial({map:faceTexture(fk),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
@@ -153,3 +155,10 @@ function addFace(head,geo,it,flipZ){geo.computeBoundingBox();const bb=geo.boundi
 /* user clothing (uploaded templates) become catalog items */
 function loadMyClothes(){(S.myClothes||[]).forEach(c=>{if(!itemById(c.id))I.push({id:c.id,name:c.name,top:"Clothing",sub:c.type,creator:0,price:0,limited:0,remaining:0,orig:0,offsale:true,fav:0,sales:0,color:"#888",color2:"#000",updated:c.t||NOW0,seed:c.id,cloth:c.data})})}
 loadMyClothes();
+
+/* ===== make sure every asset-pack picture is loaded before the game builds characters ===== */
+function preloadAssets(){(window.BLOX_ACCESSORIES||[]).forEach(a=>accReady(a));I.filter(i=>i.cloth).forEach(i=>clothImg(i));loadObjModels()}
+function assetStats(){const acc=window.BLOX_ACCESSORIES||[],cl=I.filter(i=>i.cloth),fk=Object.keys(AIMG).filter(k=>k.startsWith("face")||k=="classicFace"),om=objModels();
+ return{acc:[new Set(acc.map(a=>a.tex)).size,Object.values(accTex).filter(t=>t.ok).length],cloth:[cl.length,cl.filter(i=>clothImgs[i.id]&&clothImgs[i.id].ok).length],faces:[fk.length,fk.filter(k=>AEL[k]&&AEL[k].complete).length],models:[om.length,om.filter(m=>m._ready).length],pack:!!window.BLOX_TEX}}
+function assetsLoaded(){const s=assetStats();return s.acc[1]>=s.acc[0]&&s.cloth[1]>=s.cloth[0]&&s.models[1]>=s.models[0]&&(!s.pack||s.faces[1]>=s.faces[0])}
+setTimeout(preloadAssets,50);

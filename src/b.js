@@ -73,7 +73,7 @@ function defaultStore(){const fr=[],rq=[];U.slice(1).forEach((u,i)=>{if(i<14)fr.
   notifs:[{id:1,kind:"text",text:"Welcome to BLOX! Customize your avatar to get started.",t:now()-6e5,read:false}],txns:[],badges:[],feed:[],comments:{},creations:[],chatlogs:{},myGroupsOwned:[],gameFavs:{},itemFavs:{},blocked:[],nextId:1000}}
 let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
 if(!S||!S.me)S=defaultStore();
-S.inv=(S.inv||[]).filter(id=>id>=5000||itemById(id));S.equipped=(S.equipped||[]).filter(id=>id>=5000||itemById(id));S.bodyModel=S.bodyModel||"noob";
+S.inv=(S.inv||[]).filter(id=>id>=5000||itemById(id));S.equipped=(S.equipped||[]).filter(id=>id>=5000||itemById(id));S.bodyModel=S.bodyModel||(window.BLOX_CLASSIC?"classic":"noob");
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const nid=()=>++S.nextId;
 const owns=id=>S.inv.includes(+id);
