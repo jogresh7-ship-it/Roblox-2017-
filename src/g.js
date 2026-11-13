@@ -11,13 +11,14 @@ function loadNoob(){if(NOOB||!window.THREE||!THREE.GLTFLoader||!THREE.SkeletonUt
    let img=null;inner.traverse(o=>{if(o.isMesh&&o.material.map)img=o.material.map.image});
    NOOB={wrap,anims:gl.animations,img};onNoobReady();},e=>console.warn("model failed",e))}catch(e){console.warn(e)}}
 const texCache={};
-function noobTexture(head,torso,legs){const k=head+torso+legs;if(texCache[k])return texCache[k];const img=NOOB.img;const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const x=c.getContext("2d");x.drawImage(img,0,0);
+function noobTexture(head,torso,legs,face){const k=head+torso+legs+(face||"");if(texCache[k])return texCache[k];const img=NOOB.img;const c=document.createElement("canvas");c.width=img.width;c.height=img.height;const x=c.getContext("2d");x.drawImage(img,0,0);
  const d=x.getImageData(0,0,c.width,c.height),p=d.data;const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];const H=hx(head),Tt=hx(torso),L=hx(legs);
  const near=(i,r,g,b)=>Math.abs(p[i]-r)+Math.abs(p[i+1]-g)+Math.abs(p[i+2]-b)<40;
  for(let i=0;i<p.length;i+=4){let t=null;if(near(i,245,205,48))t=H;else if(near(i,13,105,172))t=Tt;else if(near(i,164,189,71))t=L;if(t){p[i]=t[0];p[i+1]=t[1];p[i+2]=t[2]}}
- x.putImageData(d,0,0);const tx=new THREE.CanvasTexture(c);tx.flipY=false;return texCache[k]=tx}
+ x.putImageData(d,0,0);
+ if(face&&AEL[face]){/* front of the head on this model's texture: u 935-985, v 409-487, stored upside-down */const fx=932,fy=405,fw=56,fh=86;x.fillStyle=head;x.fillRect(fx,fy,fw,fh);const s=Math.min(fw,fh*0.8);x.save();x.translate(fx+fw/2,fy+fh/2);x.scale(1,-1);x.drawImage(AEL[face],-s/2,-s/2,s,s);x.restore()}const tx=new THREE.CanvasTexture(c);tx.flipY=false;return texCache[k]=tx}
 function makeNoob(colors,items){const T=THREE;const it=eqItems(items);const by=s=>it.find(x=>x.sub==s);const shirt=by("Shirts")||by("Packages"),pants=by("Pants")||by("Packages");
- const m=T.SkeletonUtils.clone(NOOB.wrap);const tex=noobTexture(colors.head,shirt?shirt.color:colors.torso,pants?pants.color:colors.ll);
+ const m=T.SkeletonUtils.clone(NOOB.wrap);const fc=by("Faces");const tex=noobTexture(colors.head,shirt?shirt.color:colors.torso,pants?pants.color:colors.ll,fc&&fc.faceImg&&AEL[fc.faceImg]?fc.faceImg:"");
  let skin=null;const bones={};m.traverse(o=>{if(o.isSkinnedMesh)skin=o;if(o.isMesh){o.material=o.material.clone();o.material.map=tex;o.castShadow=true;o.frustumCulled=false}if(o.isBone||/_0\d|_end/.test(o.name))bones[o.name]=o});
  const find=n=>Object.values(bones).find(b=>b.name.startsWith(n));
  const mixer=new T.AnimationMixer(m);const acts={};NOOB.anims.forEach(a=>{acts[a.name.split("|").pop()]=mixer.clipAction(a)});
@@ -57,3 +58,5 @@ function renderAvatar(o){if(!NOOB||!window.THREE)return AVPH;const key=JSON.stri
   const c=AVR.cam;if(o.head){c.position.set(-1.1,4.75,-4.6);c.lookAt(0,4.5,0)}else{c.position.set(-3,2.9,-12.5);c.lookAt(0,2.55,0)}
   AVR.r.setClearColor(o.bg||"#000000",o.bg?1:0);AVR.r.render(AVR.sc,c);const url=AVR.r.domElement.toDataURL("image/png");AVR.sc.remove(m);m.traverse(x=>{if(x.isMesh)x.material.dispose()});return avCache[key]=url}catch(e){console.warn(e);return AVPH}}
 function onNoobReady(){for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];if(!GM&&!SD&&typeof route=="function")route();renderHeader()}
+
+function onFaceAsset(){for(const k in avCache)delete avCache[k];for(const k in texCache)delete texCache[k];for(const k in thumbCache)if(k[0]=="i")delete thumbCache[k];clearTimeout(window._faT);window._faT=setTimeout(()=>{if(!GM&&!SD&&typeof route=="function")route()},150)}

@@ -50,6 +50,8 @@ const I=[];
 const itemById=id=>I.find(x=>x.id==id);
 /* no fake players, no bots, no seeded games: one Baseplate */
 U.length=1;I.forEach(i=>i.creator=1);
+/* faces from the local asset pack */
+[["Sad", 0], ["Sad Zombie", 75], ["Sad Clown", 50], ["Sadfaic", 100], ["Teal Rock Star Smile", 150]].forEach(([n,p],i)=>I.push({id:900+i,name:n,top:"Body Parts",sub:"Faces",creator:1,price:p,limited:0,remaining:0,orig:p,offsale:false,fav:1000+i*37,sales:500+i*91,color:"#F5CD30",color2:"#000",updated:NOW0,seed:9000+i,faceImg:"face"+i}));
 G.length=0;G.push({id:1,name:"Baseplate",creator:1,genre:"Building",playing:0,visits:0,up:0,dn:0,fav:0,created:NOW0,updated:NOW0,maxp:6,seed:1,sponsored:false,paid:0,desc:"A plain baseplate.",passes:[],badges:[],gear:true});
 const GRP=[];["Builders Guild","Obby Makers Inc","The Pizza Crew","Knights of BLOX","Space Explorers","Scripting Academy","Trade Hub","Anime Fans","Military Academy","Fashion Designers"].forEach((n,i)=>{const gr=rng(500+i);GRP.push({id:i+1,name:n,owner:pick(U,gr).id,members:ri(50,900000,gr),color:pick(BRICK.slice(5,30),gr),desc:"Welcome to "+n+"! Be respectful, follow the rules and have fun.",shout:{by:pick(U,gr).id,t:NOW0-ri(1,90,gr)*36e5,text:pick(["Meeting at the HQ at 5pm!","New uniforms in the store.","Rank tryouts this Saturday.","Thanks for 10k members!!"],gr)},allies:[ (i+1)%10+1],enemies:[(i+4)%10+1],wall:Array.from({length:14},(_,k)=>({by:pick(U,gr).id,t:NOW0-k*5e6,text:pick(["hi","can i get a rank","when is the next event","this group is awesome","lol","who wants to play"],gr)}))})});
 const FCATS=[["Help (Technical Support and Account Issues)","Help"],["Game Design","Development"],["Scripting Helpers","Development"],["Clan Discussion","Club Houses"],["Off Topic","Club Houses"],["Let's Make a Deal","Club Houses"]];
@@ -86,7 +88,7 @@ function uAv(u,size,head){if(!u||u.id===0)return avatarSVG({size,head,bg:head?"#
 function headshot(u,size=48,pres=true){const p=u.id===0?1:u.pres;return `<div style="position:relative;width:${size}px;height:${size}px;flex:0 0 ${size}px"><div style="border-radius:50%;overflow:hidden;width:${size}px;height:${size}px;background:#dfe3e6">${uAv(u,size,true)}</div>${pres&&presColor(p)?`<span class="pres" style="background:${presColor(p)}"></span>`:""}</div>`}
 const thumbCache={};
 function gameThumb(g,w=150,h=150,v=0){const k="g"+w+"_"+h;if(thumbCache[k])return thumbCache[k];return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`)}
-function itemThumb(it,size=110){const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
+function itemThumb(it,size=110){if(it.faceImg&&typeof AOK!="undefined"&&AOK[it.faceImg])return encodeURI(AOK[it.faceImg]);const k="i"+it.id+"_"+size;if(thumbCache[k])return thumbCache[k];
  if(it.top=="Accessories"||it.top=="Clothing"||it.sub=="Faces"||it.sub=="Heads"){const r=renderAvatar({colors:{head:SKIN,torso:"#A1A5A2",la:SKIN,ra:SKIN,ll:"#A1A5A2",rl:"#A1A5A2"},items:[it.id],head:it.top=="Accessories"||it.sub=="Faces"||it.sub=="Heads",bg:"#eef0f2"});if(NOOB)thumbCache[k]=r;return r}
  const inner=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="#d4d6d8"/></svg>`;
  return thumbCache[k]="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(inner)}
